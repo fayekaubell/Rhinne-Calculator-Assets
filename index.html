@@ -329,6 +329,13 @@
             margin-bottom: 20px;
         }
 
+        .pattern-info {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+        }
+
         /* Modal styles */
         .canvas-modal {
             position: fixed;
@@ -430,6 +437,7 @@
                     <select id="pattern" required>
                         <option value="">Choose a pattern...</option>
                     </select>
+                    <div class="pattern-info" id="patternInfo"></div>
                     <div class="form-error" id="patternError" style="display: none;">
                         <em>Please select a pattern</em>
                     </div>
@@ -505,44 +513,10 @@
         </div>
     </div>
 
+    <!-- Load pattern data -->
+    <script src="patterns-data.js"></script>
+    
     <script>
-        // Updated pattern data with GitHub Pages URLs
-        const PATTERNS_DATA = [
-            {
-                "pattern_name": "Berry: Black",
-                "sku": "W-BER-BLA-1-1",
-                "sale_type": "yard",
-                "repeat_width_inches": 27,
-                "repeat_height_inches": 33.5,
-                "material_width_inches": 27,
-                "pattern_match": "half drop",
-                "min_yard_order": 5,
-                "repeat_url": "https://fayekaubell.github.io/Rhinne-Calculator-Assets/patterns/W-SAN-MOR-1-3-repeat.jpg"
-            },
-            {
-                "pattern_name": "San Moritz: Standard",
-                "sku": "W-SAN-MOR-1",
-                "sale_type": "yard",
-                "repeat_width_inches": 27,
-                "repeat_height_inches": 33.5,
-                "material_width_inches": 27,
-                "pattern_match": "half drop",
-                "min_yard_order": 5,
-                "repeat_url": "https://fayekaubell.github.io/Rhinne-Calculator-Assets/patterns/W-SAN-MOR-1-repeat.jpg"
-            },
-            {
-                "pattern_name": "San Moritz: Classic",
-                "sku": "W-SAN-MOR",
-                "sale_type": "yard",
-                "repeat_width_inches": 27,
-                "repeat_height_inches": 33.5,
-                "material_width_inches": 27,
-                "pattern_match": "half drop",
-                "min_yard_order": 5,
-                "repeat_url": "https://fayekaubell.github.io/Rhinne-Calculator-Assets/patterns/W-SAN-MOR-repeat.jpg"
-            }
-        ];
-
         // Global variables
         let currentPreview = null;
         let patternImage = null;
@@ -551,10 +525,19 @@
         // Initialize calculator when page loads
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM loaded, initializing calculator...');
+            
+            // Check if pattern data is loaded
+            if (typeof PATTERNS_DATA === 'undefined') {
+                console.error('Pattern data not loaded');
+                document.getElementById('loadingMessage').style.display = 'none';
+                document.getElementById('errorMessage').style.display = 'block';
+                return;
+            }
+            
             populatePatternDropdown();
         });
 
-        // Populate the pattern dropdown
+        // Populate the pattern dropdown and add change handler
         function populatePatternDropdown() {
             console.log('Populating pattern dropdown...');
             const select = document.getElementById('pattern');
@@ -575,6 +558,18 @@
                 
                 console.log(`Added ${sortedPatterns.length} patterns to dropdown`);
                 
+                // Add change handler to show pattern info
+                select.addEventListener('change', function() {
+                    const patternInfo = document.getElementById('patternInfo');
+                    if (this.value) {
+                        const selectedOption = this.selectedOptions[0];
+                        const pattern = JSON.parse(selectedOption.dataset.patternData);
+                        patternInfo.textContent = `Repeat: ${pattern.repeat_width_inches}" × ${pattern.repeat_height_inches}" | Match: ${pattern.pattern_match} | Material width: ${pattern.material_width_inches}"`;
+                    } else {
+                        patternInfo.textContent = '';
+                    }
+                });
+                
                 // Hide loading message and show form
                 document.getElementById('loadingMessage').style.display = 'none';
                 document.getElementById('calculatorForm').style.display = 'block';
@@ -586,7 +581,7 @@
             }
         }
 
-        // Load pattern image with multiple fallback strategies
+        // Load pattern image with fallback strategies
         function preloadPatternImage(pattern) {
             return new Promise((resolve) => {
                 if (!pattern.repeat_url) {
@@ -598,9 +593,6 @@
                 console.log('Loading pattern image:', pattern.repeat_url);
                 const img = new Image();
                 
-                // Try with CORS first
-                img.crossOrigin = 'anonymous';
-                
                 img.onload = function() {
                     console.log('Pattern image loaded successfully');
                     patternImage = img;
@@ -609,7 +601,7 @@
                 };
                 
                 img.onerror = function() {
-                    console.log('CORS image load failed, trying without CORS...');
+                    console.log('Image load failed, trying without CORS...');
                     
                     // Try without CORS
                     const fallbackImg = new Image();
@@ -622,7 +614,6 @@
                     
                     fallbackImg.onerror = function() {
                         console.error('Failed to load pattern image:', pattern.repeat_url);
-                        // Still resolve with null to continue with fallback pattern
                         resolve(null);
                     };
                     
@@ -633,15 +624,15 @@
             });
         }
 
-        // Calculate wallpaper requirements for yard-based patterns
+        // Calculate wallpaper requirements - updated for diverse pattern sizes
         function calculateYardRequirements(pattern, wallWidth, wallHeight) {
             const totalWidth = wallWidth + 4; // 4" overage
             const totalHeight = wallHeight + 4; // 4" overage
             
-            // Calculate number of strips needed
+            // Calculate number of strips needed based on material width
             const stripsNeeded = Math.ceil(totalWidth / pattern.material_width_inches);
             
-            // Calculate strip length needed
+            // Calculate strip length needed based on repeat height and pattern match
             let repeatsNeeded;
             if (pattern.pattern_match === 'half drop') {
                 // For half drop, we need extra length for pattern matching
@@ -713,6 +704,7 @@
                 const pattern = JSON.parse(selectedOption.dataset.patternData);
                 
                 console.log('Selected pattern:', pattern.pattern_name);
+                console.log('Pattern specs:', `${pattern.repeat_width_inches}" × ${pattern.repeat_height_inches}", ${pattern.pattern_match}`);
                 
                 // Convert dimensions to inches
                 const wallWidth = (widthFeet * 12) + widthInches;
@@ -797,7 +789,7 @@
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Calculate scale to fit everything in canvas
+            // Calculate scale to fit everything in canvas with proper margins
             const margin = 60;
             const maxWidth = canvas.width - (margin * 2);
             const maxHeight = canvas.height - 120; // Extra space for labels
@@ -806,7 +798,8 @@
             const heightScale = maxHeight / calculations.totalHeight;
             const scale = Math.min(widthScale, heightScale);
             
-            console.log(`Scale factor: ${scale}`);
+            console.log(`Scale factor: ${scale.toFixed(3)}`);
+            console.log(`Pattern repeat: ${pattern.repeat_width_inches}" × ${pattern.repeat_height_inches}"`);
             
             const scaledTotalWidth = calculations.totalWidth * scale;
             const scaledTotalHeight = calculations.totalHeight * scale;
@@ -817,7 +810,7 @@
             const offsetX = margin + (maxWidth - scaledTotalWidth) / 2;
             const offsetY = 80; // Space for top labels
             
-            console.log(`Drawing area: ${scaledTotalWidth} × ${scaledTotalHeight} at offset ${offsetX}, ${offsetY}`);
+            console.log(`Drawing area: ${scaledTotalWidth.toFixed(1)} × ${scaledTotalHeight.toFixed(1)} at offset ${offsetX.toFixed(1)}, ${offsetY}`);
             
             // Draw pattern if image loaded, otherwise draw fallback
             if (imageLoaded && patternImage) {
@@ -862,25 +855,25 @@
             const repeatWidth = pattern.repeat_width_inches * scale;
             const repeatHeight = pattern.repeat_height_inches * scale;
             
-            // Calculate number of tiles needed
-            const tilesX = Math.ceil(displayWidth / repeatWidth) + 1;
-            const tilesY = Math.ceil(displayHeight / repeatHeight) + 1;
+            // Calculate number of tiles needed (add extra to ensure full coverage)
+            const tilesX = Math.ceil(displayWidth / repeatWidth) + 2;
+            const tilesY = Math.ceil(displayHeight / repeatHeight) + 2;
             
-            console.log(`Drawing ${tilesX} × ${tilesY} pattern tiles`);
+            console.log(`Drawing ${tilesX} × ${tilesY} pattern tiles (repeat size: ${repeatWidth.toFixed(1)} × ${repeatHeight.toFixed(1)})`);
             
-            // Draw pattern tiles
+            // Draw pattern tiles from bottom-left
             for (let i = 0; i < tilesX; i++) {
                 for (let j = 0; j < tilesY; j++) {
                     let x = offsetX + (i * repeatWidth);
-                    let y = offsetY + (j * repeatHeight);
+                    let y = offsetY + displayHeight - ((j + 1) * repeatHeight); // Start from bottom
                     
                     // For half drop patterns, offset every other column
                     if (pattern.pattern_match === 'half drop' && i % 2 === 1) {
-                        y += repeatHeight / 2;
+                        y -= repeatHeight / 2;
                     }
                     
-                    // Only draw if within bounds
-                    if (x < offsetX + displayWidth && y < offsetY + displayHeight) {
+                    // Only draw if within bounds (with some tolerance)
+                    if (x < offsetX + displayWidth + repeatWidth && y < offsetY + displayHeight && y + repeatHeight > offsetY) {
                         try {
                             ctx.drawImage(patternImage, x, y, repeatWidth, repeatHeight);
                         } catch (error) {
@@ -897,19 +890,19 @@
             const repeatWidth = pattern.repeat_width_inches * scale;
             const repeatHeight = pattern.repeat_height_inches * scale;
             
-            const tilesX = Math.ceil(displayWidth / repeatWidth) + 1;
-            const tilesY = Math.ceil(displayHeight / repeatHeight) + 1;
+            const tilesX = Math.ceil(displayWidth / repeatWidth) + 2;
+            const tilesY = Math.ceil(displayHeight / repeatHeight) + 2;
             
             for (let i = 0; i < tilesX; i++) {
                 for (let j = 0; j < tilesY; j++) {
                     let x = offsetX + (i * repeatWidth);
-                    let y = offsetY + (j * repeatHeight);
+                    let y = offsetY + displayHeight - ((j + 1) * repeatHeight);
                     
                     if (pattern.pattern_match === 'half drop' && i % 2 === 1) {
-                        y += repeatHeight / 2;
+                        y -= repeatHeight / 2;
                     }
                     
-                    if (x < offsetX + displayWidth && y < offsetY + displayHeight) {
+                    if (x < offsetX + displayWidth + repeatWidth && y < offsetY + displayHeight && y + repeatHeight > offsetY) {
                         drawFallbackTile(ctx, x, y, repeatWidth, repeatHeight, i, j);
                     }
                 }
@@ -917,7 +910,7 @@
         }
 
         function drawFallbackTile(ctx, x, y, width, height, i, j) {
-            // Create a simple pattern as fallback
+            // Create a simple pattern as fallback with pattern name
             const colors = ['#f8f9fa', '#e9ecef', '#dee2e6', '#ced4da'];
             const colorIndex = (i + j) % colors.length;
             
@@ -928,11 +921,13 @@
             ctx.lineWidth = 1;
             ctx.strokeRect(x, y, width, height);
             
-            // Add pattern name text
-            ctx.fillStyle = '#6c757d';
-            ctx.font = '12px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('Pattern', x + width/2, y + height/2);
+            // Add pattern info text if tile is large enough
+            if (width > 40 && height > 20) {
+                ctx.fillStyle = '#6c757d';
+                ctx.font = `${Math.min(12, width/8)}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.fillText(currentPreview.pattern.pattern_name.split(':')[0], x + width/2, y + height/2);
+            }
         }
 
         function drawLabels(ctx, offsetX, offsetY, scaledTotalWidth, scaledTotalHeight, wallOffsetX, wallOffsetY, scaledWallWidth, scaledWallHeight, scale) {
@@ -970,8 +965,8 @@
         }
 
         function openCanvasModal() {
-            // Modal functionality would go here
-            console.log('Modal functionality not implemented yet');
+            console.log('Canvas modal - full size view (to be implemented)');
+            // Modal functionality can be added here if needed
         }
 
         // Utility functions
@@ -985,257 +980,4 @@
         }
     </script>
 </body>
-</html>ayekaubell.github.io/Rhinne-Calculator-Assets/patterns/W-BER-BLA-1-1-repeat.jpg"
-            },
-            {
-                "pattern_name": "Berry: Black Alt",
-                "sku": "W-BER-BLA-1-2",
-                "sale_type": "yard",
-                "repeat_width_inches": 27,
-                "repeat_height_inches": 33.5,
-                "material_width_inches": 27,
-                "pattern_match": "half drop",
-                "min_yard_order": 5,
-                "repeat_url": "https://fayekaubell.github.io/Rhinne-Calculator-Assets/patterns/W-BER-BLA-1-2-repeat.jpg"
-            },
-            {
-                "pattern_name": "Berry: Black Version 2",
-                "sku": "W-BER-BLA-1",
-                "sale_type": "yard",
-                "repeat_width_inches": 27,
-                "repeat_height_inches": 33.5,
-                "material_width_inches": 27,
-                "pattern_match": "half drop",
-                "min_yard_order": 5,
-                "repeat_url": "https://fayekaubell.github.io/Rhinne-Calculator-Assets/patterns/W-BER-BLA-1-repeat.jpg"
-            },
-            {
-                "pattern_name": "Berry: Black Standard",
-                "sku": "W-BER-BLA",
-                "sale_type": "yard",
-                "repeat_width_inches": 27,
-                "repeat_height_inches": 33.5,
-                "material_width_inches": 27,
-                "pattern_match": "half drop",
-                "min_yard_order": 5,
-                "repeat_url": "https://fayekaubell.github.io/Rhinne-Calculator-Assets/patterns/W-BER-BLA-repeat.jpg"
-            },
-            {
-                "pattern_name": "Botanical: Avocado",
-                "sku": "W-BOT-AVO-1",
-                "sale_type": "yard",
-                "repeat_width_inches": 27,
-                "repeat_height_inches": 33.5,
-                "material_width_inches": 27,
-                "pattern_match": "half drop",
-                "min_yard_order": 5,
-                "repeat_url": "https://fayekaubell.github.io/Rhinne-Calculator-Assets/patterns/W-BOT-AVO-1-repeat.jpg"
-            },
-            {
-                "pattern_name": "Botanical: Avocado Standard",
-                "sku": "W-BOT-AVO",
-                "sale_type": "yard",
-                "repeat_width_inches": 27,
-                "repeat_height_inches": 33.5,
-                "material_width_inches": 27,
-                "pattern_match": "half drop",
-                "min_yard_order": 5,
-                "repeat_url": "https://fayekaubell.github.io/Rhinne-Calculator-Assets/patterns/W-BOT-AVO-repeat.jpg"
-            },
-            {
-                "pattern_name": "Botanical: Coral",
-                "sku": "W-BOT-COR",
-                "sale_type": "yard",
-                "repeat_width_inches": 27,
-                "repeat_height_inches": 33.5,
-                "material_width_inches": 27,
-                "pattern_match": "half drop",
-                "min_yard_order": 5,
-                "repeat_url": "https://fayekaubell.github.io/Rhinne-Calculator-Assets/patterns/W-BOT-COR-repeat.jpg"
-            },
-            {
-                "pattern_name": "Etienne: Coffee",
-                "sku": "W-ETI-COF",
-                "sale_type": "yard",
-                "repeat_width_inches": 27,
-                "repeat_height_inches": 27,
-                "material_width_inches": 27,
-                "pattern_match": "straight match",
-                "min_yard_order": 5,
-                "repeat_url": "https://fayekaubell.github.io/Rhinne-Calculator-Assets/patterns/W-ETI-COF-repeat.jpg"
-            },
-            {
-                "pattern_name": "Houdini: Black",
-                "sku": "W-HOU-BLA",
-                "sale_type": "yard",
-                "repeat_width_inches": 27,
-                "repeat_height_inches": 27,
-                "material_width_inches": 27,
-                "pattern_match": "straight match",
-                "min_yard_order": 5,
-                "repeat_url": "https://fayekaubell.github.io/Rhinne-Calculator-Assets/patterns/W-HOU-BLA-repeat.jpg"
-            },
-            {
-                "pattern_name": "Houdini: Clover",
-                "sku": "W-HOU-CLO",
-                "sale_type": "yard",
-                "repeat_width_inches": 27,
-                "repeat_height_inches": 27,
-                "material_width_inches": 27,
-                "pattern_match": "straight match",
-                "min_yard_order": 5,
-                "repeat_url": "https://fayekaubell.github.io/Rhinne-Calculator-Assets/patterns/W-HOU-CLO-repeat.jpg"
-            },
-            {
-                "pattern_name": "Ladybird: Clover",
-                "sku": "W-LAD-CLA-1",
-                "sale_type": "yard",
-                "repeat_width_inches": 27,
-                "repeat_height_inches": 33.5,
-                "material_width_inches": 27,
-                "pattern_match": "half drop",
-                "min_yard_order": 5,
-                "repeat_url": "https://fayekaubell.github.io/Rhinne-Calculator-Assets/patterns/W-LAD-CLA-1-repeat.jpg"
-            },
-            {
-                "pattern_name": "Ladybird: Clover Standard",
-                "sku": "W-LAD-CLA",
-                "sale_type": "yard",
-                "repeat_width_inches": 27,
-                "repeat_height_inches": 33.5,
-                "material_width_inches": 27,
-                "pattern_match": "half drop",
-                "min_yard_order": 5,
-                "repeat_url": "https://fayekaubell.github.io/Rhinne-Calculator-Assets/patterns/W-LAD-CLA-repeat.jpg"
-            },
-            {
-                "pattern_name": "Megaflora: Blue",
-                "sku": "W-MEG-BLU",
-                "sale_type": "yard",
-                "repeat_width_inches": 27,
-                "repeat_height_inches": 33.5,
-                "material_width_inches": 27,
-                "pattern_match": "half drop",
-                "min_yard_order": 5,
-                "repeat_url": "https://fayekaubell.github.io/Rhinne-Calculator-Assets/patterns/W-MEG-BLU-repeat.jpg"
-            },
-            {
-                "pattern_name": "Megaflora: Dusk",
-                "sku": "W-MEG-DUS-1",
-                "sale_type": "yard",
-                "repeat_width_inches": 27,
-                "repeat_height_inches": 33.5,
-                "material_width_inches": 27,
-                "pattern_match": "half drop",
-                "min_yard_order": 5,
-                "repeat_url": "https://fayekaubell.github.io/Rhinne-Calculator-Assets/patterns/W-MEG-DUS-1-repeat.jpg"
-            },
-            {
-                "pattern_name": "Megaflora: Dusk Version 2",
-                "sku": "W-MEG-DUS-2",
-                "sale_type": "yard",
-                "repeat_width_inches": 27,
-                "repeat_height_inches": 33.5,
-                "material_width_inches": 27,
-                "pattern_match": "half drop",
-                "min_yard_order": 5,
-                "repeat_url": "https://fayekaubell.github.io/Rhinne-Calculator-Assets/patterns/W-MEG-DUS-2-repeat.jpg"
-            },
-            {
-                "pattern_name": "Megaflora: Dusk Standard",
-                "sku": "W-MEG-DUS",
-                "sale_type": "yard",
-                "repeat_width_inches": 27,
-                "repeat_height_inches": 33.5,
-                "material_width_inches": 27,
-                "pattern_match": "half drop",
-                "min_yard_order": 5,
-                "repeat_url": "https://fayekaubell.github.io/Rhinne-Calculator-Assets/patterns/W-MEG-DUS-repeat.jpg"
-            },
-            {
-                "pattern_name": "Ondine: Coral",
-                "sku": "W-OND-COR",
-                "sale_type": "yard",
-                "repeat_width_inches": 27,
-                "repeat_height_inches": 27,
-                "material_width_inches": 27,
-                "pattern_match": "straight match",
-                "min_yard_order": 5,
-                "repeat_url": "https://fayekaubell.github.io/Rhinne-Calculator-Assets/patterns/W-OND-COR-repeat.jpg"
-            },
-            {
-                "pattern_name": "Ondine: Lavender",
-                "sku": "W-OND-LAV-1-1",
-                "sale_type": "yard",
-                "repeat_width_inches": 27,
-                "repeat_height_inches": 27,
-                "material_width_inches": 27,
-                "pattern_match": "straight match",
-                "min_yard_order": 5,
-                "repeat_url": "https://fayekaubell.github.io/Rhinne-Calculator-Assets/patterns/W-OND-LAV-1-1-repeat.jpg"
-            },
-            {
-                "pattern_name": "Ondine: Lavender Standard",
-                "sku": "W-OND-LAV-1",
-                "sale_type": "yard",
-                "repeat_width_inches": 27,
-                "repeat_height_inches": 27,
-                "material_width_inches": 27,
-                "pattern_match": "straight match",
-                "min_yard_order": 5,
-                "repeat_url": "https://fayekaubell.github.io/Rhinne-Calculator-Assets/patterns/W-OND-LAV-1-repeat.jpg"
-            },
-            {
-                "pattern_name": "Ondine: Lavender Version 2",
-                "sku": "W-OND-LAV",
-                "sale_type": "yard",
-                "repeat_width_inches": 27,
-                "repeat_height_inches": 27,
-                "material_width_inches": 27,
-                "pattern_match": "straight match",
-                "min_yard_order": 5,
-                "repeat_url": "https://fayekaubell.github.io/Rhinne-Calculator-Assets/patterns/W-OND-LAV-repeat.jpg"
-            },
-            {
-                "pattern_name": "San Moritz: Variant 1",
-                "sku": "W-SAN-MOR-1-1-1",
-                "sale_type": "yard",
-                "repeat_width_inches": 27,
-                "repeat_height_inches": 33.5,
-                "material_width_inches": 27,
-                "pattern_match": "half drop",
-                "min_yard_order": 5,
-                "repeat_url": "https://fayekaubell.github.io/Rhinne-Calculator-Assets/patterns/W-SAN-MOR-1-1-1-repeat.jpg"
-            },
-            {
-                "pattern_name": "San Moritz: Variant 2",
-                "sku": "W-SAN-MOR-1-1",
-                "sale_type": "yard",
-                "repeat_width_inches": 27,
-                "repeat_height_inches": 33.5,
-                "material_width_inches": 27,
-                "pattern_match": "half drop",
-                "min_yard_order": 5,
-                "repeat_url": "https://fayekaubell.github.io/Rhinne-Calculator-Assets/patterns/W-SAN-MOR-1-1-repeat.jpg"
-            },
-            {
-                "pattern_name": "San Moritz: Variant 3",
-                "sku": "W-SAN-MOR-1-2",
-                "sale_type": "yard",
-                "repeat_width_inches": 27,
-                "repeat_height_inches": 33.5,
-                "material_width_inches": 27,
-                "pattern_match": "half drop",
-                "min_yard_order": 5,
-                "repeat_url": "https://fayekaubell.github.io/Rhinne-Calculator-Assets/patterns/W-SAN-MOR-1-2-repeat.jpg"
-            },
-            {
-                "pattern_name": "San Moritz: Variant 4",
-                "sku": "W-SAN-MOR-1-3",
-                "sale_type": "yard",
-                "repeat_width_inches": 27,
-                "repeat_height_inches": 33.5,
-                "material_width_inches": 27,
-                "pattern_match": "half drop",
-                "min_yard_order": 5,
-                "repeat_url": "https://f
+</html>
