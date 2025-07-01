@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallpaper Preview Calculator</title>
+    <style>
+        /* Reset and base styles - minimal to inherit from parent site */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Use system fonts to inherit better */
+        body {
+            font-family: inherit;
+            line-height: 1.6;
+            color: inherit;
+            background: transparent;
+        }
+
+        /* Container matches your Shopify layout */
+        .container {
+            max-width: min(95vw, 1800px);
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Page title section */
+        .page-title {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-title h1 {
+            color: inherit;
+            margin-bottom: 15px;
+            font-size: 2rem;
+            font-weight: normal;
+        }
+
+        .page-title p {
+            margin: 0;
+            opacity: 0.7;
+            font-size: 16px;
+        }
+
+        /* Measuring guide - collapsible like your site */
+        .measuring-guide {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .measuring-guide details {
+            padding: 0;
+        }
+
+        .measuring-guide summary {
+            padding: 20px 40px;
+            cursor: pointer;
+            list-style: none;
+            border-radius: 12px;
+            transition: background-color 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .measuring-guide summary h3 {
+            margin: 0;
+            color: inherit;
+        }
+
+        .measuring-guide summary:hover {
+            background-color: rgba(248, 249, 250, 0.5);
+        }
+
+        .measuring-guide summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .measuring-guide summary::after {
+            content: '+';
+            font-size: 18px;
+            font-weight: bold;
+            transition: transform 0.3s ease;
+        }
+
+        .measuring-guide details[open] summary::after {
+            transform: rotate(45deg);
+        }
+
+        .guide-content {
+            padding: 20px 40px 40px 40px;
+            border-top: 1px solid rgba(233, 236, 239, 0.5);
+        }
+
+        .guide-content p {
+            margin-bottom: 12px;
+            line-height: 1.5;
+            color: inherit;
+        }
+
+        .guide-content p:last-child {
+            margin-bottom: 0;
+            margin-top: 15px;
+            font-style: italic;
+            opacity: 0.8;
+        }
+
+        /* Calculator section */
+        .calculator-section {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label,
+        .form-group h3 {
+            display: block;
+            margin-bottom: 15px;
+            color: inherit;
+            font-size: inherit;
+            font-weight: inherit;
+            font-family: inherit;
+        }
+
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid rgba(233, 236, 239, 0.8);
+            border-radius: 8px;
+            transition: border-color 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: rgba(108, 117, 125, 0.8);
+        }
+
+        .dimension-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .dimension-input input {
+            flex: 1;
+        }
+
+        .dimension-input span {
+            font-weight: 600;
+            opacity: 0.7;
+        }
+
+        .btn {
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: 100%;
+            margin-top: 20px;
+            font-size: 16px;
+            font-weight: 600;
+            background: rgba(108, 117, 125, 0.9);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            background: rgba(90, 98, 104, 0.9);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Preview section */
+        .preview-section {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 30px;
+            display: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .title-container {
+            text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+            display: block;
+            clear: both;
+        }
+
+        .title-container h2 {
+            margin: 0;
+            padding: 0;
+            display: block;
+            width: 100%;
+            color: inherit;
+        }
+
+        .canvas-container {
+            text-align: center;
+            margin: 30px 0;
+            padding: 0;
+            width: 100%;
+            display: block;
+            clear: both;
+            position: relative;
+        }
+
+        #previewCanvas {
+            border: 2px solid rgba(221, 221, 221, 0.8);
+            border-radius: 8px;
+            background: white;
+            max-width: 100%;
+            height: auto;
+            cursor: zoom-in;
+            display: block;
+            margin: 0 auto;
+        }
+
+        #previewCanvas:hover {
+            border-color: rgba(52, 152, 219, 0.8);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-weight: 600;
+            color: inherit;
+            text-align: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .preview-info {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .preview-info h3 {
+            margin-bottom: 15px;
+            text-align: center;
+            color: inherit;
+        }
+
+        .order-section {
+            margin-bottom: 20px;
+        }
+
+        .order-line {
+            margin-bottom: 8px;
+            line-height: 1.4;
+            text-align: center;
+        }
+
+        .divider {
+            border: none;
+            border-top: 1px solid rgba(233, 236, 239, 0.5);
+            margin: 15px 0;
+        }
+
+        .disclaimer {
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .disclaimer p {
+            margin: 0;
+            font-style: italic;
+            opacity: 0.8;
+        }
+
+        .form-error {
+            color: #dc3545;
+            font-style: italic;
+            font-size: 14px;
+            margin-top: 8px;
+            padding: 5px 0;
+        }
+
+        .loading-message {
+            text-align: center;
+            padding: 20px;
+            color: inherit;
+            font-style: italic;
+            opacity: 0.7;
+        }
+
+        .error-message {
+            text-align: center;
+            padding: 20px;
+            color: #dc3545;
+            background: rgba(248, 215, 218, 0.5);
+            border: 1px solid rgba(245, 198, 203, 0.5);
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        /* Modal styles */
+        .canvas-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 9999;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 20px 0;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        .canvas-modal canvas {
+            cursor: zoom-out;
+            border: 2px solid #fff;
+            border-radius: 8px;
+            margin: auto;
+            display: block;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+                max-width: 95vw;
+            }
+
+            .calculator-section,
+            .preview-section {
+                padding: 25px;
+            }
+
+            .canvas-container {
+                margin: 20px 0;
+                padding: 0 10px;
+            }
+
+            #previewCanvas {
+                max-width: calc(100vw - 50px);
+                width: 100%;
+                height: auto;
+            }
+
+            .dimension-input {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .container {
+                max-width: min(90vw, 2000px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="page-title">
+            <h1>Wallpaper Preview Calculator</h1>
+            <p>Enter wall dimensions to estimate how much wallpaper you'll need. Visualize the pattern layout on your wall.</p>
+        </div>
+
+        <div class="measuring-guide">
+            <details>
+                <summary><h3>Measuring Guide</h3></summary>
+                <div class="guide-content">
+                    <p><strong>Standard Walls & Connected Walls</strong> Measure total width across all walls and height at the tallest point. Include doors, windows, and other obstacles in your measurements.</p>
+                    <p><strong>Stairway Walls</strong> Measure width at the broadest section and height from the first floor to the maximum height.</p>
+                    <p><strong>Ceilings</strong> Measure the shorter dimension for width and longer dimension for height.</p>
+                    <p><strong>Sloped Ceiling Walls</strong> Measure full width and maximum height.</p>
+                    <p><em>Note: Wallpaper projects can be tricky. Please don't hesitate to contact us for help with understanding measurements.</em></p>
+                </div>
+            </details>
+        </div>
+
+        <div class="calculator-section">
+            <div id="loadingMessage" class="loading-message">
+                Loading wallpaper patterns...
+            </div>
+
+            <div id="errorMessage" class="error-message" style="display: none;">
+                Error loading patterns. Please refresh the page to try again.
+            </div>
+
+            <div id="calculatorForm" style="display: block;">
+                <div class="form-group">
+                    <h3>Select Wallpaper Pattern</h3>
+                    <select id="pattern" required>
+                        <option value="">Choose a pattern...</option>
+                    </select>
+                    <div class="form-error" id="patternError" style="display: none;">
+                        <em>Please select a pattern</em>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <h3>Wall Width</h3>
+                    <div class="dimension-input">
+                        <input type="number" id="widthFeet" placeholder="Feet" min="0" max="50">
+                        <span>ft</span>
+                        <input type="number" id="widthInches" placeholder="Inches" min="0" max="11" step="0.25" value="0">
+                        <span>in</span>
+                    </div>
+                    <div class="form-error" id="widthError" style="display: none;">
+                        <em>Please enter wall width</em>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <h3>Wall Height</h3>
+                    <div class="dimension-input">
+                        <input type="number" id="heightFeet" placeholder="Feet" min="0" max="20">
+                        <span>ft</span>
+                        <input type="number" id="heightInches" placeholder="Inches" min="0" max="11" step="0.25" value="0">
+                        <span>in</span>
+                    </div>
+                    <div class="form-error" id="heightError" style="display: none;">
+                        <em>Please enter wall height</em>
+                    </div>
+                </div>
+
+                <button type="button" class="btn" onclick="generatePreview()">Generate Preview</button>
+            </div>
+        </div>
+
+        <div class="preview-section" id="previewSection">
+            <div class="title-container">
+                <h2 id="previewTitle">Pattern Preview</h2>
+            </div>
+
+            <div class="canvas-container">
+                <canvas id="previewCanvas" width="1400" height="1000"></canvas>
+                <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+                    Loading pattern...
+                </div>
+            </div>
+
+            <div class="preview-info">
+                <div class="order-section">
+                    <h3>Estimated Quantity Required:</h3>
+                    <div class="order-line">
+                        <strong>Wall Dimensions:</strong> <span id="wallDimensions">-</span>
+                    </div>
+                    <div class="order-line">
+                        <strong>Number of Strips:</strong> <span id="numStrips">-</span>
+                    </div>
+                    <div class="order-line">
+                        <strong>Strip Length:</strong> <span id="stripLength">-</span>
+                    </div>
+                    <div class="order-line">
+                        <strong>Total Yards:</strong> <span id="totalYards">-</span>
+                    </div>
+                </div>
+
+                <hr class="divider">
+
+                <div class="disclaimer">
+                    <p><em>Results include 4" overage and account for pattern matching requirements.<br>
+                    We recommend adding 10-20% additional overage to prevent installation issues.<br>
+                    Please confirm requirements with your installer before ordering.</em></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load pattern data -->
+    <script src="patterns-data.js"></script>
+    
+    <script>
+        // Global variables
+        let currentPreview = null;
+        let patternImage = null;
+        let imageLoaded = false;
+
+        // Initialize calculator when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            populatePatternDropdown();
+            hideLoadingMessage();
+        });
+
+        // Populate the pattern dropdown
+        function populatePatternDropdown() {
+            const select = document.getElementById('pattern');
+            
+            // Sort patterns alphabetically
+            const sortedPatterns = [...PATTERNS_DATA].sort((a, b) => 
+                a.pattern_name.localeCompare(b.pattern_name)
+            );
+            
+            sortedPatterns.forEach(pattern => {
+                const option = document.createElement('option');
+                option.value = pattern.sku;
+                option.textContent = `${pattern.pattern_name}`;
+                option.dataset.patternData = JSON.stringify(pattern);
+                select.appendChild(option);
+            });
+        }
+
+        function hideLoadingMessage() {
+            document.getElementById('loadingMessage').style.display = 'none';
+        }
+
+        // Load pattern image
+        function preloadPatternImage(pattern) {
+            return new Promise((resolve, reject) => {
+                if (!pattern.repeat_url) {
+                    resolve(null);
+                    return;
+                }
+
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                
+                img.onload = function() {
+                    patternImage = img;
+                    imageLoaded = true;
+                    resolve(img);
+                };
+                
+                img.onerror = function() {
+                    console.error('Failed to load pattern image');
+                    const fallbackImg = new Image();
+                    fallbackImg.onload = function() {
+                        patternImage = fallbackImg;
+                        imageLoaded = true;
+                        resolve(fallbackImg);
+                    };
+                    fallbackImg.onerror = function() {
+                        console.error('Failed to load pattern image even without CORS');
+                        resolve(null);
+                    };
+                    fallbackImg.src = pattern.repeat_url;
+                };
+                
+                img.src = pattern.repeat_url;
+            });
+        }
+
+        // Calculate wallpaper requirements for yard-based patterns
+        function calculateYardRequirements(pattern, wallWidth, wallHeight) {
+            const totalWidth = wallWidth + 4; // 4" overage
+            const totalHeight = wallHeight + 4; // 4" overage
+            
+            // Calculate number of strips needed
+            const stripsNeeded = Math.ceil(totalWidth / pattern.material_width_inches);
+            
+            // Calculate strip length needed
+            let repeatsNeeded;
+            if (pattern.pattern_match === 'half drop') {
+                // For half drop, we need extra length for pattern matching
+                repeatsNeeded = Math.ceil(totalHeight / pattern.repeat_height_inches) + 1;
+            } else {
+                // For straight match
+                repeatsNeeded = Math.ceil(totalHeight / pattern.repeat_height_inches);
+            }
+            
+            const stripLengthInches = repeatsNeeded * pattern.repeat_height_inches;
+            
+            // Calculate total yardage: (strip length × strips needed) / 36, rounded up, minimum from pattern
+            const totalYardageRaw = (stripLengthInches * stripsNeeded) / 36;
+            const totalYardage = Math.max(Math.ceil(totalYardageRaw), pattern.min_yard_order);
+            
+            return {
+                stripsNeeded: stripsNeeded,
+                stripLengthInches: stripLengthInches,
+                stripLengthYards: Math.ceil(stripLengthInches / 36),
+                totalYardage: totalYardage,
+                totalWidth: stripsNeeded * pattern.material_width_inches,
+                totalHeight: stripLengthInches
+            };
+        }
+
+        // Main function to generate preview
+        async function generatePreview() {
+            try {
+                // Reset state
+                currentPreview = null;
+                patternImage = null;
+                imageLoaded = false;
+                
+                document.getElementById('previewSection').style.display = 'none';
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                // Get form values
+                const patternSelect = document.getElementById('pattern');
+                const widthFeet = parseInt(document.getElementById('widthFeet').value) || 0;
+                const widthInches = parseFloat(document.getElementById('widthInches').value) || 0;
+                const heightFeet = parseInt(document.getElementById('heightFeet').value) || 0;
+                const heightInches = parseFloat(document.getElementById('heightInches').value) || 0;
+                
+                // Validate inputs
+                clearErrors();
+                let hasErrors = false;
+                
+                if (!patternSelect.value) {
+                    showError('patternError');
+                    hasErrors = true;
+                }
+                
+                if (widthFeet === 0 && widthInches === 0) {
+                    showError('widthError');
+                    hasErrors = true;
+                }
+                
+                if (heightFeet === 0 && heightInches === 0) {
+                    showError('heightError');
+                    hasErrors = true;
+                }
+                
+                if (hasErrors) return;
+                
+                // Get pattern data
+                const selectedOption = patternSelect.selectedOptions[0];
+                const pattern = JSON.parse(selectedOption.dataset.patternData);
+                
+                // Convert dimensions to inches
+                const wallWidth = (widthFeet * 12) + widthInches;
+                const wallHeight = (heightFeet * 12) + heightInches;
+                
+                // Calculate requirements
+                const calculations = calculateYardRequirements(pattern, wallWidth, wallHeight);
+                
+                // Format dimensions for display
+                const formattedWidth = widthInches > 0 ? `${widthFeet}'${widthInches}"` : `${widthFeet}'`;
+                const formattedHeight = heightInches > 0 ? `${heightFeet}'${heightInches}"` : `${heightFeet}'`;
+                
+                // Store current preview data
+                currentPreview = {
+                    pattern,
+                    wallWidth,
+                    wallHeight,
+                    calculations,
+                    formattedWidth,
+                    formattedHeight
+                };
+                
+                // Update title and show section
+                document.getElementById('previewTitle').textContent = `${pattern.pattern_name} Preview`;
+                document.getElementById('loadingOverlay').style.display = 'flex';
+                document.getElementById('previewSection').style.display = 'block';
+                document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth' });
+                
+                // Load pattern image
+                await preloadPatternImage(pattern);
+                
+                // Update results display
+                updatePreviewInfo();
+                
+                // Draw the preview
+                drawPreview();
+                
+                // Hide loading overlay
+                document.getElementById('loadingOverlay').style.display = 'none';
+                
+                // Add click handler for modal (non-mobile only)
+                const canvas = document.getElementById('previewCanvas');
+                const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+                
+                if (!isMobile) {
+                    canvas.style.cursor = 'zoom-in';
+                    canvas.onclick = openCanvasModal;
+                } else {
+                    canvas.style.cursor = 'default';
+                    canvas.onclick = null;
+                }
+                
+            } catch (error) {
+                console.error('Error in generatePreview:', error);
+                document.getElementById('loadingOverlay').style.display = 'none';
+                alert('An error occurred while generating the preview. Please try again.');
+            }
+        }
+
+        function updatePreviewInfo() {
+            const { calculations, formattedWidth, formattedHeight } = currentPreview;
+            
+            document.getElementById('wallDimensions').textContent = `${formattedWidth} × ${formattedHeight}`;
+            document.getElementById('numStrips').textContent = calculations.stripsNeeded;
+            document.getElementById('stripLength').textContent = `${calculations.stripLengthYards} yards each`;
+            document.getElementById('totalYards').textContent = `${calculations.totalYardage} yards`;
+        }
+
+        function drawPreview() {
+            const canvas = document.getElementById('previewCanvas');
+            const ctx = canvas.getContext('2d');
+            const { pattern, wallWidth, wallHeight, calculations } = currentPreview;
+            
+            // Clear canvas
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Calculate scale to fit everything in canvas
+            const margin = 60;
+            const maxWidth = canvas.width - (margin * 2);
+            const maxHeight = canvas.height - 120; // Extra space for labels
+            
+            const widthScale = maxWidth / calculations.totalWidth;
+            const heightScale = maxHeight / calculations.totalHeight;
+            const scale = Math.min(widthScale, heightScale);
+            
+            const scaledTotalWidth = calculations.totalWidth * scale;
+            const scaledTotalHeight = calculations.totalHeight * scale;
+            const scaledWallWidth = wallWidth * scale;
+            const scaledWallHeight = wallHeight * scale;
+            
+            // Center the preview
+            const offsetX = margin + (maxWidth - scaledTotalWidth) / 2;
+            const offsetY = 80; // Space for top labels
+            
+            // Draw pattern if image loaded
+            if (imageLoaded && patternImage) {
+                drawPatternTiles(ctx, offsetX, offsetY, scaledTotalWidth, scaledTotalHeight, scale);
+            }
+            
+            // Draw wall outline (centered within the total coverage)
+            const wallOffsetX = offsetX + (scaledTotalWidth - scaledWallWidth) / 2;
+            const wallOffsetY = offsetY + (scaledTotalHeight - scaledWallHeight) / 2;
+            
+            ctx.strokeStyle = '#2c3e50';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(wallOffsetX, wallOffsetY, scaledWallWidth, scaledWallHeight);
+            
+            // Draw strip divisions
+            ctx.strokeStyle = '#666666';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([8, 8]);
+            
+            for (let i = 1; i < calculations.stripsNeeded; i++) {
+                const x = offsetX + (i * pattern.material_width_inches * scale);
+                ctx.beginPath();
+                ctx.moveTo(x, offsetY);
+                ctx.lineTo(x, offsetY + scaledTotalHeight);
+                ctx.stroke();
+            }
+            
+            ctx.setLineDash([]);
+            
+            // Add labels
+            drawLabels(ctx, offsetX, offsetY, scaledTotalWidth, scaledTotalHeight, wallOffsetX, wallOffsetY, scaledWallWidth, scaledWallHeight, scale);
+        }
+
+        function drawPatternTiles(ctx, offsetX, offsetY, displayWidth, displayHeight, scale) {
+            const { pattern } = currentPreview;
+            const repeatWidth = pattern.repeat_width_inches * scale;
+            const repeatHeight = pattern.repeat_height_inches * scale;
+            
+            // Calculate number of tiles needed
+            const tilesX = Math.ceil(displayWidth / repeatWidth) + 1;
+            const tilesY = Math.ceil(displayHeight / repeatHeight) + 1;
+            
+            // Draw pattern tiles
+            for (let i = 0; i < tilesX; i++) {
+                for (let j = 0; j < tilesY; j++) {
+                    let x = offsetX + (i * repeatWidth);
+                    let y = offsetY + (j * repeatHeight);
+                    
+                    // For half drop patterns, offset every other column
+                    if (pattern.pattern_match === 'half drop' && i % 2 === 1) {
+                        y += repeatHeight / 2;
+                    }
+                    
+                    // Only draw if within bounds
+                    if (x < offsetX + displayWidth && y < offsetY + displayHeight) {
+                        try {
+                            ctx.drawImage(patternImage, x, y, repeatWidth, repeatHeight);
+                        } catch (error) {
+                            // Fallback pattern if image fails
+                            ctx.fillStyle = '#f0f0f0';
+                            ctx.fillRect(x, y, repeatWidth, repeatHeight);
+                            ctx.strokeStyle = '#ccc';
+                            ctx.strokeRect(x, y, repeatWidth, repeatHeight);
+                        }
+                    }
+                }
+            }
+        }
+
+        function drawLabels(ctx, offsetX, offsetY, scaledTotalWidth, scaledTotalHeight, wallOffsetX, wallOffsetY, scaledWallWidth, scaledWallHeight, scale) {
+            const { pattern, calculations } = currentPreview;
+            
+            ctx.fillStyle = '#333';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'center';
+            
+            // Strip labels
+            for (let i = 0; i < calculations.stripsNeeded; i++) {
+                const stripCenterX = offsetX + (i * pattern.material_width_inches * scale) + (pattern.material_width_inches * scale / 2);
+                const labelY = offsetY - 20;
+                
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                const stripText = `Strip ${i + 1}`;
+                const metrics = ctx.measureText(stripText);
+                ctx.fillRect(stripCenterX - metrics.width/2 - 4, labelY - 12, metrics.width + 8, 16);
+                
+                ctx.fillStyle = '#333';
+                ctx.fillText(stripText, stripCenterX, labelY);
+            }
+            
+            // Wall label
+            const wallCenterX = wallOffsetX + scaledWallWidth / 2;
+            const wallCenterY = wallOffsetY + scaledWallHeight / 2;
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            const wallText = 'Your Wall';
+            const wallMetrics = ctx.measureText(wallText);
+            ctx.fillRect(wallCenterX - wallMetrics.width/2 - 6, wallCenterY - 8, wallMetrics.width + 12, 16);
+            
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillText(wallText, wallCenterX, wallCenterY + 4);
+        }
+
+        function openCanvasModal() {
+            const canvas = document.getElementById('previewCanvas');
+            
+            if (!currentPreview) {
+                console.error('No current preview data available for modal');
+                return;
+            }
+            
+            const modal = document.createElement('div');
+            modal.className = 'canvas-modal';
+            
+            const largeCanvas = document.createElement('canvas');
+            
+            // Create high-res version
+            const hiResScale = 2;
+            largeCanvas.width = canvas.width * hiResScale;
+            largeCanvas.height = canvas.height * hiResScale;
+            
+            const displayWidth = Math.min(window.innerWidth * 0.9, largeCanvas.width);
+            const displayHeight = (displayWidth / largeCanvas.width) * largeCanvas.height;
+            
+            largeCanvas.style.width = displayWidth + 'px';
+            largeCanvas.style.height = displayHeight + 'px';
+            
+            const largeCtx = largeCanvas.getContext('2d');
+            largeCtx.scale(hiResScale, hiResScale);
+            
+            // Redraw the preview at high resolution
+            largeCtx.fillStyle = '#ffffff';
+            largeCtx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Temporarily store original canvas dimensions and redraw
+            const originalPreview = currentPreview;
+            currentPreview = originalPreview; // Ensure we have the data
+            
+            const { pattern, wallWidth, wallHeight, calculations } = currentPreview;
+            
+            // Calculate scale for high-res version
+            const margin = 60;
+            const maxWidth = canvas.width - (margin * 2);
+            const maxHeight = canvas.height - 120;
+            
+            const widthScale = maxWidth / calculations.totalWidth;
+            const heightScale = maxHeight / calculations.totalHeight;
+            const scale = Math.min(widthScale, heightScale);
+            
+            const scaledTotalWidth = calculations.totalWidth * scale;
+            const scaledTotalHeight = calculations.totalHeight * scale;
+            const scaledWallWidth = wallWidth * scale;
+            const scaledWallHeight = wallHeight * scale;
+            
+            const offsetX = margin + (maxWidth - scaledTotalWidth) / 2;
+            const offsetY = 80;
+            
+            // Draw pattern if available
+            if (imageLoaded && patternImage) {
+                drawPatternTilesForCanvas(largeCtx, offsetX, offsetY, scaledTotalWidth, scaledTotalHeight, scale);
+            }
+            
+            // Draw wall outline
+            const wallOffsetX = offsetX + (scaledTotalWidth - scaledWallWidth) / 2;
+            const wallOffsetY = offsetY + (scaledTotalHeight - scaledWallHeight) / 2;
+            
+            largeCtx.strokeStyle = '#2c3e50';
+            largeCtx.lineWidth = 3;
+            largeCtx.strokeRect(wallOffsetX, wallOffsetY, scaledWallWidth, scaledWallHeight);
+            
+            // Draw strip divisions
+            largeCtx.strokeStyle = '#666666';
+            largeCtx.lineWidth = 1;
+            largeCtx.setLineDash([8, 8]);
+            
+            for (let i = 1; i < calculations.stripsNeeded; i++) {
+                const x = offsetX + (i * pattern.material_width_inches * scale);
+                largeCtx.beginPath();
+                largeCtx.moveTo(x, offsetY);
+                largeCtx.lineTo(x, offsetY + scaledTotalHeight);
+                largeCtx.stroke();
+            }
+            
+            largeCtx.setLineDash([]);
+            
+            // Add labels
+            drawLabelsForCanvas(largeCtx, offsetX, offsetY, scaledTotalWidth, scaledTotalHeight, wallOffsetX, wallOffsetY, scaledWallWidth, scaledWallHeight, scale);
+            
+            modal.appendChild(largeCanvas);
+            
+            // Close modal on click
+            modal.onclick = (e) => {
+                if (e.target === modal || e.target === largeCanvas) {
+                    document.body.removeChild(modal);
+                }
+            };
+            
+            largeCanvas.onclick = () => {
+                document.body.removeChild(modal);
+            };
+            
+            document.body.appendChild(modal);
+        }
+
+        function drawPatternTilesForCanvas(ctx, offsetX, offsetY, displayWidth, displayHeight, scale) {
+            const { pattern } = currentPreview;
+            const repeatWidth = pattern.repeat_width_inches * scale;
+            const repeatHeight = pattern.repeat_height_inches * scale;
+            
+            const tilesX = Math.ceil(displayWidth / repeatWidth) + 1;
+            const tilesY = Math.ceil(displayHeight / repeatHeight) + 1;
+            
+            for (let i = 0; i < tilesX; i++) {
+                for (let j = 0; j < tilesY; j++) {
+                    let x = offsetX + (i * repeatWidth);
+                    let y = offsetY + (j * repeatHeight);
+                    
+                    if (pattern.pattern_match === 'half drop' && i % 2 === 1) {
+                        y += repeatHeight / 2;
+                    }
+                    
+                    if (x < offsetX + displayWidth && y < offsetY + displayHeight) {
+                        try {
+                            ctx.drawImage(patternImage, x, y, repeatWidth, repeatHeight);
+                        } catch (error) {
+                            ctx.fillStyle = '#f0f0f0';
+                            ctx.fillRect(x, y, repeatWidth, repeatHeight);
+                            ctx.strokeStyle = '#ccc';
+                            ctx.strokeRect(x, y, repeatWidth, repeatHeight);
+                        }
+                    }
+                }
+            }
+        }
+
+        function drawLabelsForCanvas(ctx, offsetX, offsetY, scaledTotalWidth, scaledTotalHeight, wallOffsetX, wallOffsetY, scaledWallWidth, scaledWallHeight, scale) {
+            const { pattern, calculations } = currentPreview;
+            
+            ctx.fillStyle = '#333';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'center';
+            
+            // Strip labels
+            for (let i = 0; i < calculations.stripsNeeded; i++) {
+                const stripCenterX = offsetX + (i * pattern.material_width_inches * scale) + (pattern.material_width_inches * scale / 2);
+                const labelY = offsetY - 20;
+                
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                const stripText = `Strip ${i + 1}`;
+                const metrics = ctx.measureText(stripText);
+                ctx.fillRect(stripCenterX - metrics.width/2 - 4, labelY - 12, metrics.width + 8, 16);
+                
+                ctx.fillStyle = '#333';
+                ctx.fillText(stripText, stripCenterX, labelY);
+            }
+            
+            // Wall label
+            const wallCenterX = wallOffsetX + scaledWallWidth / 2;
+            const wallCenterY = wallOffsetY + scaledWallHeight / 2;
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            const wallText = 'Your Wall';
+            const wallMetrics = ctx.measureText(wallText);
+            ctx.fillRect(wallCenterX - wallMetrics.width/2 - 6, wallCenterY - 8, wallMetrics.width + 12, 16);
+            
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillText(wallText, wallCenterX, wallCenterY + 4);
+        }
+
+        // Utility functions
+        function showError(elementId) {
+            document.getElementById(elementId).style.display = 'block';
+        }
+
+        function clearErrors() {
+            const errors = document.querySelectorAll('.form-error');
+            errors.forEach(error => error.style.display = 'none');
+        }
+    </script>
+</body>
+</html>
