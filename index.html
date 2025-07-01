@@ -505,8 +505,27 @@
         </div>
     </div>
 
-    <!-- Load pattern data -->
-    <script src="patterns-data.js"></script>
+    <!-- Embedded pattern data directly in HTML -->
+    <script>
+        // Wallpaper patterns data - TEST VERSION with GitHub Pages URL
+        const PATTERNS_DATA = [
+            {
+                "pattern_name": "Test Pattern",
+                "sku": "W-BER-BLA-1-1",
+                "sale_type": "yard",
+                "repeat_width_inches": 27,
+                "repeat_height_inches": 33.5,
+                "material_width_inches": 27,
+                "pattern_match": "half drop",
+                "min_yard_order": 5,
+                "repeat_url": "https://fayekaubell.github.io/Rhinne-Calculator-Assets/patterns/W-BER-BLA-1-1-repeat.jpg"
+            }
+        ];
+
+        // Make the data available globally
+        window.PATTERNS_DATA = PATTERNS_DATA;
+        console.log('Pattern data loaded:', PATTERNS_DATA);
+    </script>
     
     <script>
         // Global variables
@@ -542,50 +561,60 @@
             document.getElementById('loadingMessage').style.display = 'none';
         }
 
-        // Load pattern image with better error handling
+        // Load pattern image with simpler approach
         function preloadPatternImage(pattern) {
             return new Promise((resolve, reject) => {
+                console.log('🔄 Starting image load for:', pattern.pattern_name);
+                console.log('📷 Image URL:', pattern.repeat_url);
+                
                 if (!pattern.repeat_url) {
-                    console.error('No repeat_url found for pattern:', pattern.pattern_name);
+                    console.error('❌ No repeat_url found for pattern:', pattern.pattern_name);
                     resolve(null);
                     return;
                 }
 
-                console.log('Loading pattern image:', pattern.repeat_url);
-                
                 const img = new Image();
-                // Try without CORS first since GitHub serves images properly
                 
+                // Set up success handler
                 img.onload = function() {
-                    console.log('Pattern image loaded successfully:', pattern.pattern_name);
+                    console.log('✅ Pattern image loaded successfully!');
+                    console.log('📐 Image dimensions:', img.width, 'x', img.height);
                     patternImage = img;
                     imageLoaded = true;
                     resolve(img);
                 };
                 
-                img.onerror = function() {
-                    console.error('Failed to load pattern image:', pattern.repeat_url);
-                    // Try with CORS
-                    const corsImg = new Image();
-                    corsImg.crossOrigin = 'anonymous';
+                // Set up error handler
+                img.onerror = function(error) {
+                    console.error('❌ Failed to load pattern image (first try):', pattern.repeat_url);
                     
-                    corsImg.onload = function() {
-                        console.log('Pattern image loaded with CORS:', pattern.pattern_name);
-                        patternImage = corsImg;
+                    // Try a different approach - sometimes GitHub needs a different method
+                    const img2 = new Image();
+                    
+                    img2.onload = function() {
+                        console.log('✅ Pattern image loaded on second try!');
+                        patternImage = img2;
                         imageLoaded = true;
-                        resolve(corsImg);
+                        resolve(img2);
                     };
                     
-                    corsImg.onerror = function() {
-                        console.error('Failed to load pattern image even with CORS:', pattern.repeat_url);
+                    img2.onerror = function() {
+                        console.error('❌ Failed to load pattern image completely');
+                        console.log('🔍 Final attempt failed for:', pattern.repeat_url);
+                        
+                        // Instead of failing, let's continue without the image
                         patternImage = null;
                         imageLoaded = false;
-                        resolve(null);
+                        resolve(null); // Resolve with null instead of rejecting
                     };
                     
-                    corsImg.src = pattern.repeat_url;
+                    // Try without crossOrigin
+                    img2.src = pattern.repeat_url;
                 };
                 
+                // Start the load
+                console.log('🚀 Starting image load...');
+                img.crossOrigin = 'anonymous';
                 img.src = pattern.repeat_url;
             });
         }
@@ -811,6 +840,13 @@
             // Calculate strip position
             const stripX = offsetX + (stripIndex * stripWidth);
             
+            console.log(`🎨 Drawing strip ${stripIndex + 1}:`, {
+                stripX: stripX,
+                stripWidth: stripWidth,
+                imageLoaded: imageLoaded,
+                patternImage: !!patternImage
+            });
+            
             // Clip to this strip area
             ctx.save();
             ctx.beginPath();
@@ -818,6 +854,8 @@
             ctx.clip();
             
             if (imageLoaded && patternImage) {
+                console.log(`✅ Drawing actual pattern for strip ${stripIndex + 1}`);
+                
                 // Calculate how many pattern repeats fit horizontally in the strip
                 const horizontalRepeats = Math.ceil(stripWidth / repeatWidth) + 1;
                 
@@ -833,6 +871,14 @@
                 // Calculate how many vertical repeats we need
                 const verticalRepeats = Math.ceil((displayHeight + Math.abs(verticalOffset)) / repeatHeight) + 1;
                 
+                console.log(`📐 Pattern layout for strip ${stripIndex + 1}:`, {
+                    horizontalRepeats: horizontalRepeats,
+                    verticalRepeats: verticalRepeats,
+                    verticalOffset: verticalOffset,
+                    repeatWidth: repeatWidth,
+                    repeatHeight: repeatHeight
+                });
+                
                 // Draw pattern repeats for this strip
                 for (let i = 0; i < horizontalRepeats; i++) {
                     for (let j = 0; j < verticalRepeats; j++) {
@@ -844,29 +890,31 @@
                         if (x < stripX + stripWidth && y < offsetY + displayHeight && y + repeatHeight > offsetY) {
                             try {
                                 ctx.drawImage(patternImage, x, y, repeatWidth, repeatHeight);
+                                console.log(`🎨 Drew pattern tile at (${x.toFixed(1)}, ${y.toFixed(1)})`);
                             } catch (error) {
-                                console.warn('Failed to draw pattern image:', error);
-                                // Draw placeholder
-                                ctx.fillStyle = '#f0f0f0';
+                                console.error('❌ Failed to draw pattern image:', error);
+                                // Draw red placeholder to show where pattern should be
+                                ctx.fillStyle = '#ffcccc';
                                 ctx.fillRect(x, y, repeatWidth, repeatHeight);
-                                ctx.strokeStyle = '#ddd';
-                                ctx.lineWidth = 0.5;
+                                ctx.strokeStyle = '#ff0000';
+                                ctx.lineWidth = 1;
                                 ctx.strokeRect(x, y, repeatWidth, repeatHeight);
                             }
                         }
                     }
                 }
             } else {
-                // If no image loaded, draw placeholder pattern
-                console.warn('Pattern image not loaded, drawing placeholder');
-                ctx.fillStyle = '#f8f8f8';
+                // If no image loaded, draw green placeholder (success loading, but no image)
+                console.warn(`⚠️ No pattern image for strip ${stripIndex + 1}, drawing placeholder`);
+                
+                ctx.fillStyle = '#ccffcc'; // Light green - shows the code is working
                 ctx.fillRect(stripX, offsetY, stripWidth, displayHeight);
                 
-                // Draw grid pattern as placeholder
-                ctx.strokeStyle = '#e0e0e0';
-                ctx.lineWidth = 1;
+                // Draw clear grid pattern as placeholder
+                ctx.strokeStyle = '#00aa00';
+                ctx.lineWidth = 2;
                 
-                // Vertical lines
+                // Draw repeat grid
                 for (let x = stripX; x <= stripX + stripWidth; x += repeatWidth) {
                     ctx.beginPath();
                     ctx.moveTo(x, offsetY);
@@ -874,7 +922,6 @@
                     ctx.stroke();
                 }
                 
-                // Horizontal lines
                 for (let y = offsetY; y <= offsetY + displayHeight; y += repeatHeight) {
                     ctx.beginPath();
                     ctx.moveTo(stripX, y);
@@ -882,12 +929,12 @@
                     ctx.stroke();
                 }
                 
-                // Add text indicating missing image
-                ctx.fillStyle = '#999';
-                ctx.font = '12px Arial';
+                // Add clear text
+                ctx.fillStyle = '#006600';
+                ctx.font = 'bold 16px Arial';
                 ctx.textAlign = 'center';
-                ctx.fillText('Pattern', stripX + stripWidth/2, offsetY + displayHeight/2);
-                ctx.fillText('Loading...', stripX + stripWidth/2, offsetY + displayHeight/2 + 15);
+                ctx.fillText('PATTERN', stripX + stripWidth/2, offsetY + displayHeight/2 - 10);
+                ctx.fillText('PLACEHOLDER', stripX + stripWidth/2, offsetY + displayHeight/2 + 10);
             }
             
             ctx.restore();
