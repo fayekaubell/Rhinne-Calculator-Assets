@@ -505,27 +505,8 @@
         </div>
     </div>
 
-    <!-- Embedded pattern data directly in HTML -->
-    <script>
-        // Wallpaper patterns data - TEST VERSION with GitHub Pages URL
-        const PATTERNS_DATA = [
-            {
-                "pattern_name": "Test Pattern",
-                "sku": "W-BER-BLA-1-1",
-                "sale_type": "yard",
-                "repeat_width_inches": 27,
-                "repeat_height_inches": 33.5,
-                "material_width_inches": 27,
-                "pattern_match": "half drop",
-                "min_yard_order": 5,
-                "repeat_url": "https://fayekaubell.github.io/Rhinne-Calculator-Assets/patterns/W-BER-BLA-1-1-repeat.jpg"
-            }
-        ];
-
-        // Make the data available globally
-        window.PATTERNS_DATA = PATTERNS_DATA;
-        console.log('Pattern data loaded:', PATTERNS_DATA);
-    </script>
+    <!-- Load pattern data -->
+    <script src="patterns-data.js"></script>
     
     <script>
         // Global variables
@@ -561,60 +542,38 @@
             document.getElementById('loadingMessage').style.display = 'none';
         }
 
-        // Load pattern image with simpler approach
+        // Load pattern image
         function preloadPatternImage(pattern) {
             return new Promise((resolve, reject) => {
-                console.log('🔄 Starting image load for:', pattern.pattern_name);
-                console.log('📷 Image URL:', pattern.repeat_url);
-                
                 if (!pattern.repeat_url) {
-                    console.error('❌ No repeat_url found for pattern:', pattern.pattern_name);
                     resolve(null);
                     return;
                 }
 
                 const img = new Image();
+                img.crossOrigin = 'anonymous';
                 
-                // Set up success handler
                 img.onload = function() {
-                    console.log('✅ Pattern image loaded successfully!');
-                    console.log('📐 Image dimensions:', img.width, 'x', img.height);
                     patternImage = img;
                     imageLoaded = true;
                     resolve(img);
                 };
                 
-                // Set up error handler
-                img.onerror = function(error) {
-                    console.error('❌ Failed to load pattern image (first try):', pattern.repeat_url);
-                    
-                    // Try a different approach - sometimes GitHub needs a different method
-                    const img2 = new Image();
-                    
-                    img2.onload = function() {
-                        console.log('✅ Pattern image loaded on second try!');
-                        patternImage = img2;
+                img.onerror = function() {
+                    console.error('Failed to load pattern image');
+                    const fallbackImg = new Image();
+                    fallbackImg.onload = function() {
+                        patternImage = fallbackImg;
                         imageLoaded = true;
-                        resolve(img2);
+                        resolve(fallbackImg);
                     };
-                    
-                    img2.onerror = function() {
-                        console.error('❌ Failed to load pattern image completely');
-                        console.log('🔍 Final attempt failed for:', pattern.repeat_url);
-                        
-                        // Instead of failing, let's continue without the image
-                        patternImage = null;
-                        imageLoaded = false;
-                        resolve(null); // Resolve with null instead of rejecting
+                    fallbackImg.onerror = function() {
+                        console.error('Failed to load pattern image even without CORS');
+                        resolve(null);
                     };
-                    
-                    // Try without crossOrigin
-                    img2.src = pattern.repeat_url;
+                    fallbackImg.src = pattern.repeat_url;
                 };
                 
-                // Start the load
-                console.log('🚀 Starting image load...');
-                img.crossOrigin = 'anonymous';
                 img.src = pattern.repeat_url;
             });
         }
@@ -823,121 +782,39 @@
         }
 
         function drawPatternTiles(ctx, offsetX, offsetY, displayWidth, displayHeight, scale) {
-            const { pattern, calculations } = currentPreview;
-            
-            // Draw pattern for each strip individually
-            for (let stripIndex = 0; stripIndex < calculations.stripsNeeded; stripIndex++) {
-                drawPatternForStrip(ctx, stripIndex, offsetX, offsetY, displayHeight, scale);
-            }
-        }
-
-        function drawPatternForStrip(ctx, stripIndex, offsetX, offsetY, displayHeight, scale) {
             const { pattern } = currentPreview;
             const repeatWidth = pattern.repeat_width_inches * scale;
             const repeatHeight = pattern.repeat_height_inches * scale;
-            const stripWidth = pattern.material_width_inches * scale;
             
-            // Calculate strip position
-            const stripX = offsetX + (stripIndex * stripWidth);
+            // Calculate number of tiles needed
+            const tilesX = Math.ceil(displayWidth / repeatWidth) + 1;
+            const tilesY = Math.ceil(displayHeight / repeatHeight) + 1;
             
-            console.log(`🎨 Drawing strip ${stripIndex + 1}:`, {
-                stripX: stripX,
-                stripWidth: stripWidth,
-                imageLoaded: imageLoaded,
-                patternImage: !!patternImage
-            });
-            
-            // Clip to this strip area
-            ctx.save();
-            ctx.beginPath();
-            ctx.rect(stripX, offsetY, stripWidth, displayHeight);
-            ctx.clip();
-            
-            if (imageLoaded && patternImage) {
-                console.log(`✅ Drawing actual pattern for strip ${stripIndex + 1}`);
-                
-                // Calculate how many pattern repeats fit horizontally in the strip
-                const horizontalRepeats = Math.ceil(stripWidth / repeatWidth) + 1;
-                
-                // For half drop patterns, calculate vertical offset for this strip
-                let verticalOffset = 0;
-                if (pattern.pattern_match === 'half drop' && stripIndex % 2 === 1) {
-                    verticalOffset = repeatHeight / 2;
-                }
-                
-                // Start from bottom-left corner and work up
-                const stripBottom = offsetY + displayHeight;
-                
-                // Calculate how many vertical repeats we need
-                const verticalRepeats = Math.ceil((displayHeight + Math.abs(verticalOffset)) / repeatHeight) + 1;
-                
-                console.log(`📐 Pattern layout for strip ${stripIndex + 1}:`, {
-                    horizontalRepeats: horizontalRepeats,
-                    verticalRepeats: verticalRepeats,
-                    verticalOffset: verticalOffset,
-                    repeatWidth: repeatWidth,
-                    repeatHeight: repeatHeight
-                });
-                
-                // Draw pattern repeats for this strip
-                for (let i = 0; i < horizontalRepeats; i++) {
-                    for (let j = 0; j < verticalRepeats; j++) {
-                        // Calculate position - align bottom-left of repeat with bottom-left of strip
-                        const x = stripX + (i * repeatWidth);
-                        const y = stripBottom - ((j + 1) * repeatHeight) + verticalOffset;
-                        
-                        // Only draw if the repeat intersects with the strip area
-                        if (x < stripX + stripWidth && y < offsetY + displayHeight && y + repeatHeight > offsetY) {
-                            try {
-                                ctx.drawImage(patternImage, x, y, repeatWidth, repeatHeight);
-                                console.log(`🎨 Drew pattern tile at (${x.toFixed(1)}, ${y.toFixed(1)})`);
-                            } catch (error) {
-                                console.error('❌ Failed to draw pattern image:', error);
-                                // Draw red placeholder to show where pattern should be
-                                ctx.fillStyle = '#ffcccc';
-                                ctx.fillRect(x, y, repeatWidth, repeatHeight);
-                                ctx.strokeStyle = '#ff0000';
-                                ctx.lineWidth = 1;
-                                ctx.strokeRect(x, y, repeatWidth, repeatHeight);
-                            }
+            // Draw pattern tiles
+            for (let i = 0; i < tilesX; i++) {
+                for (let j = 0; j < tilesY; j++) {
+                    let x = offsetX + (i * repeatWidth);
+                    let y = offsetY + (j * repeatHeight);
+                    
+                    // For half drop patterns, offset every other column
+                    if (pattern.pattern_match === 'half drop' && i % 2 === 1) {
+                        y += repeatHeight / 2;
+                    }
+                    
+                    // Only draw if within bounds
+                    if (x < offsetX + displayWidth && y < offsetY + displayHeight) {
+                        try {
+                            ctx.drawImage(patternImage, x, y, repeatWidth, repeatHeight);
+                        } catch (error) {
+                            // Fallback pattern if image fails
+                            ctx.fillStyle = '#f0f0f0';
+                            ctx.fillRect(x, y, repeatWidth, repeatHeight);
+                            ctx.strokeStyle = '#ccc';
+                            ctx.strokeRect(x, y, repeatWidth, repeatHeight);
                         }
                     }
                 }
-            } else {
-                // If no image loaded, draw green placeholder (success loading, but no image)
-                console.warn(`⚠️ No pattern image for strip ${stripIndex + 1}, drawing placeholder`);
-                
-                ctx.fillStyle = '#ccffcc'; // Light green - shows the code is working
-                ctx.fillRect(stripX, offsetY, stripWidth, displayHeight);
-                
-                // Draw clear grid pattern as placeholder
-                ctx.strokeStyle = '#00aa00';
-                ctx.lineWidth = 2;
-                
-                // Draw repeat grid
-                for (let x = stripX; x <= stripX + stripWidth; x += repeatWidth) {
-                    ctx.beginPath();
-                    ctx.moveTo(x, offsetY);
-                    ctx.lineTo(x, offsetY + displayHeight);
-                    ctx.stroke();
-                }
-                
-                for (let y = offsetY; y <= offsetY + displayHeight; y += repeatHeight) {
-                    ctx.beginPath();
-                    ctx.moveTo(stripX, y);
-                    ctx.lineTo(stripX + stripWidth, y);
-                    ctx.stroke();
-                }
-                
-                // Add clear text
-                ctx.fillStyle = '#006600';
-                ctx.font = 'bold 16px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText('PATTERN', stripX + stripWidth/2, offsetY + displayHeight/2 - 10);
-                ctx.fillText('PLACEHOLDER', stripX + stripWidth/2, offsetY + displayHeight/2 + 10);
             }
-            
-            ctx.restore();
         }
 
         function drawLabels(ctx, offsetX, offsetY, scaledTotalWidth, scaledTotalHeight, wallOffsetX, wallOffsetY, scaledWallWidth, scaledWallHeight, scale) {
@@ -1076,95 +953,34 @@
         }
 
         function drawPatternTilesForCanvas(ctx, offsetX, offsetY, displayWidth, displayHeight, scale) {
-            const { pattern, calculations } = currentPreview;
-            
-            // Draw pattern for each strip individually
-            for (let stripIndex = 0; stripIndex < calculations.stripsNeeded; stripIndex++) {
-                drawPatternForStripCanvas(ctx, stripIndex, offsetX, offsetY, displayHeight, scale);
-            }
-        }
-
-        function drawPatternForStripCanvas(ctx, stripIndex, offsetX, offsetY, displayHeight, scale) {
             const { pattern } = currentPreview;
             const repeatWidth = pattern.repeat_width_inches * scale;
             const repeatHeight = pattern.repeat_height_inches * scale;
-            const stripWidth = pattern.material_width_inches * scale;
             
-            // Calculate strip position
-            const stripX = offsetX + (stripIndex * stripWidth);
+            const tilesX = Math.ceil(displayWidth / repeatWidth) + 1;
+            const tilesY = Math.ceil(displayHeight / repeatHeight) + 1;
             
-            // Clip to this strip area
-            ctx.save();
-            ctx.beginPath();
-            ctx.rect(stripX, offsetY, stripWidth, displayHeight);
-            ctx.clip();
-            
-            if (imageLoaded && patternImage) {
-                // Calculate how many pattern repeats fit horizontally in the strip
-                const horizontalRepeats = Math.ceil(stripWidth / repeatWidth) + 1;
-                
-                // For half drop patterns, calculate vertical offset for this strip
-                let verticalOffset = 0;
-                if (pattern.pattern_match === 'half drop' && stripIndex % 2 === 1) {
-                    verticalOffset = repeatHeight / 2;
-                }
-                
-                // Start from bottom-left corner and work up
-                const stripBottom = offsetY + displayHeight;
-                
-                // Calculate how many vertical repeats we need
-                const verticalRepeats = Math.ceil((displayHeight + Math.abs(verticalOffset)) / repeatHeight) + 1;
-                
-                // Draw pattern repeats for this strip
-                for (let i = 0; i < horizontalRepeats; i++) {
-                    for (let j = 0; j < verticalRepeats; j++) {
-                        // Calculate position - align bottom-left of repeat with bottom-left of strip
-                        const x = stripX + (i * repeatWidth);
-                        const y = stripBottom - ((j + 1) * repeatHeight) + verticalOffset;
-                        
-                        // Only draw if the repeat intersects with the strip area
-                        if (x < stripX + stripWidth && y < offsetY + displayHeight && y + repeatHeight > offsetY) {
-                            try {
-                                ctx.drawImage(patternImage, x, y, repeatWidth, repeatHeight);
-                            } catch (error) {
-                                console.warn('Failed to draw pattern image in modal:', error);
-                                // Draw placeholder
-                                ctx.fillStyle = '#f0f0f0';
-                                ctx.fillRect(x, y, repeatWidth, repeatHeight);
-                                ctx.strokeStyle = '#ddd';
-                                ctx.lineWidth = 0.5;
-                                ctx.strokeRect(x, y, repeatWidth, repeatHeight);
-                            }
+            for (let i = 0; i < tilesX; i++) {
+                for (let j = 0; j < tilesY; j++) {
+                    let x = offsetX + (i * repeatWidth);
+                    let y = offsetY + (j * repeatHeight);
+                    
+                    if (pattern.pattern_match === 'half drop' && i % 2 === 1) {
+                        y += repeatHeight / 2;
+                    }
+                    
+                    if (x < offsetX + displayWidth && y < offsetY + displayHeight) {
+                        try {
+                            ctx.drawImage(patternImage, x, y, repeatWidth, repeatHeight);
+                        } catch (error) {
+                            ctx.fillStyle = '#f0f0f0';
+                            ctx.fillRect(x, y, repeatWidth, repeatHeight);
+                            ctx.strokeStyle = '#ccc';
+                            ctx.strokeRect(x, y, repeatWidth, repeatHeight);
                         }
                     }
                 }
-            } else {
-                // If no image loaded, draw placeholder pattern
-                ctx.fillStyle = '#f8f8f8';
-                ctx.fillRect(stripX, offsetY, stripWidth, displayHeight);
-                
-                // Draw grid pattern as placeholder
-                ctx.strokeStyle = '#e0e0e0';
-                ctx.lineWidth = 1;
-                
-                // Vertical lines
-                for (let x = stripX; x <= stripX + stripWidth; x += repeatWidth) {
-                    ctx.beginPath();
-                    ctx.moveTo(x, offsetY);
-                    ctx.lineTo(x, offsetY + displayHeight);
-                    ctx.stroke();
-                }
-                
-                // Horizontal lines
-                for (let y = offsetY; y <= offsetY + displayHeight; y += repeatHeight) {
-                    ctx.beginPath();
-                    ctx.moveTo(stripX, y);
-                    ctx.lineTo(stripX + stripWidth, y);
-                    ctx.stroke();
-                }
             }
-            
-            ctx.restore();
         }
 
         function drawLabelsForCanvas(ctx, offsetX, offsetY, scaledTotalWidth, scaledTotalHeight, wallOffsetX, wallOffsetY, scaledWallWidth, scaledWallHeight, scale) {
