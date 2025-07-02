@@ -1,5 +1,6 @@
 // Canvas Rendering Logic for Wallpaper Calculator
 // Handles the visual preview of wallpaper patterns on walls
+// FIXED: Proper half-drop pattern visualization
 
 // Main drawing function
 function drawPreview() {
@@ -72,7 +73,7 @@ function drawPreview() {
     drawSection3_WallOnly(ctx, wallOnlyOffsetX, currentY, scaledWallWidth, scaledWallHeight, scale);
 }
 
-// Section 1: Strip layout for yard patterns
+// FIXED: Section 1 - Strip layout for yard patterns with proper half-drop rendering
 function drawSection1_StripLayout(ctx, offsetX, offsetY, scaledTotalWidth, scaledTotalHeight, scale) {
     const { pattern, calculations } = currentPreview;
     
@@ -104,29 +105,34 @@ function drawSection1_StripLayout(ctx, offsetX, offsetY, scaledTotalWidth, scale
             const stripX = offsetX + (stripIndex * pattern.panelWidth * scale);
             const stripWidth = pattern.panelWidth * scale;
             
-            // Calculate pattern vertical offset for half drop patterns
-            let patternVerticalOffset = 0;
+            // FIXED: Calculate strip-level vertical offset for half drop patterns
+            let stripVerticalOffset = 0;
             if (patternMatch === 'half drop' && stripIndex % 2 === 1) {
-                patternVerticalOffset = repeatH / 2;
+                stripVerticalOffset = repeatH / 2;
             }
             
-            console.log(`🎨 Strip ${stripIndex}: stripX=${stripX}, stripWidth=${stripWidth}, patternOffset=${patternVerticalOffset}, patternMatch=${patternMatch}`);
+            console.log(`🎨 Strip ${stripIndex}: stripX=${stripX}, stripWidth=${stripWidth}, stripOffset=${stripVerticalOffset}, patternMatch=${patternMatch}`);
             
             ctx.save();
             ctx.beginPath();
             ctx.rect(stripX, offsetY, stripWidth, scaledTotalHeight);
             ctx.clip();
             
-            // Draw pattern tiles within this strip
-            // Start from a consistent Y position and apply offset
-            const startY = offsetY;
-            const endY = offsetY + scaledTotalHeight;
+            // FIXED: Draw pattern tiles within this strip
+            // Calculate how many horizontal repeats fit in the strip
+            const horizontalRepeats = Math.ceil(stripWidth / repeatW) + 1; // Extra repeat for safety
             
-            for (let x = -repeatW; x < stripWidth + repeatW; x += repeatW) {
-                // Start pattern drawing from the top of the strip area, with offset applied
-                for (let y = startY - repeatH + patternVerticalOffset; y < endY + repeatH; y += repeatH) {
-                    const drawX = stripX + x;
-                    const drawY = y;
+            // Start from top with enough padding and apply strip offset to ALL pattern tiles
+            const startY = offsetY - repeatH;
+            const endY = offsetY + scaledTotalHeight + repeatH;
+            
+            for (let xIndex = 0; xIndex < horizontalRepeats; xIndex++) {
+                const patternX = stripX + (xIndex * repeatW) - repeatW; // Start one repeat to the left for safety
+                
+                // Draw vertical column of repeats with strip offset applied to ALL
+                for (let y = startY; y < endY; y += repeatH) {
+                    const drawX = patternX;
+                    const drawY = y + stripVerticalOffset; // Apply strip offset to every repeat in the strip
                     
                     // Only draw if the pattern will be visible in the strip area
                     if (drawY + repeatH > offsetY && drawY < offsetY + scaledTotalHeight) {
@@ -149,7 +155,7 @@ function drawSection1_StripLayout(ctx, offsetX, offsetY, scaledTotalWidth, scale
     drawStripOutlines(ctx, offsetX, offsetY, scaledTotalWidth, scaledTotalHeight, scale, true);
 }
 
-// Section 2: Complete view with wall overlay
+// FIXED: Section 2 - Complete view with wall overlay and proper half-drop rendering
 function drawSection2_CompleteView(ctx, offsetX, offsetY, scaledTotalWidth, scaledTotalHeight, scaledWallWidth, scaledWallHeight, wallOffsetX, wallOffsetY, scale) {
     const { pattern, calculations } = currentPreview;
     
@@ -159,61 +165,58 @@ function drawSection2_CompleteView(ctx, offsetX, offsetY, scaledTotalWidth, scal
         const repeatH = pattern.repeatHeight * scale;
         const patternMatch = pattern.patternMatch || 'straight';
         
-        // First pass: Draw all strips at 50% opacity
-        ctx.globalAlpha = 0.5;
-        for (let stripIndex = 0; stripIndex < calculations.panelsNeeded; stripIndex++) {
-            const stripX = offsetX + (stripIndex * pattern.panelWidth * scale);
-            const stripWidth = pattern.panelWidth * scale;
+        // FIXED: Helper function to draw pattern with half-drop support
+        const drawPatternInArea = (alpha, clipArea = null) => {
+            ctx.globalAlpha = alpha;
             
-            ctx.save();
-            ctx.beginPath();
-            ctx.rect(stripX, offsetY, stripWidth, scaledTotalHeight);
-            ctx.clip();
-            
-            // Calculate pattern vertical offset for half drop patterns
-            let patternVerticalOffset = 0;
-            if (patternMatch === 'half drop' && stripIndex % 2 === 1) {
-                patternVerticalOffset = repeatH / 2;
+            if (clipArea) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.rect(clipArea.x, clipArea.y, clipArea.width, clipArea.height);
+                ctx.clip();
             }
             
-            for (let x = -repeatW; x < stripWidth + repeatW; x += repeatW) {
-                for (let y = -repeatH; y < scaledTotalHeight + repeatH; y += repeatH) {
-                    const drawX = stripX + x;
-                    const drawY = offsetY + y + patternVerticalOffset;
-                    ctx.drawImage(patternImage, drawX, drawY, repeatW, repeatH);
+            for (let stripIndex = 0; stripIndex < calculations.panelsNeeded; stripIndex++) {
+                const stripX = offsetX + (stripIndex * pattern.panelWidth * scale);
+                const stripWidth = pattern.panelWidth * scale;
+                
+                // Calculate strip-level vertical offset for half drop patterns
+                let stripVerticalOffset = 0;
+                if (patternMatch === 'half drop' && stripIndex % 2 === 1) {
+                    stripVerticalOffset = repeatH / 2;
+                }
+                
+                // Calculate how many horizontal repeats fit in the strip
+                const horizontalRepeats = Math.ceil(stripWidth / repeatW) + 1;
+                
+                for (let xIndex = 0; xIndex < horizontalRepeats; xIndex++) {
+                    const patternX = stripX + (xIndex * repeatW) - repeatW;
+                    
+                    // Draw vertical column of repeats with strip offset
+                    for (let y = -repeatH; y < scaledTotalHeight + repeatH; y += repeatH) {
+                        const drawX = patternX;
+                        const drawY = offsetY + y + stripVerticalOffset; // Apply strip offset
+                        ctx.drawImage(patternImage, drawX, drawY, repeatW, repeatH);
+                    }
                 }
             }
             
-            ctx.restore();
-        }
+            if (clipArea) {
+                ctx.restore();
+            }
+        };
+        
+        // First pass: Draw all strips at 50% opacity
+        drawPatternInArea(0.5);
         
         // Second pass: Draw wall area at 100% opacity
-        ctx.globalAlpha = 1.0;
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(wallOffsetX, wallOffsetY, scaledWallWidth, scaledWallHeight);
-        ctx.clip();
+        drawPatternInArea(1.0, {
+            x: wallOffsetX,
+            y: wallOffsetY,
+            width: scaledWallWidth,
+            height: scaledWallHeight
+        });
         
-        for (let stripIndex = 0; stripIndex < calculations.panelsNeeded; stripIndex++) {
-            const stripX = offsetX + (stripIndex * pattern.panelWidth * scale);
-            const stripWidth = pattern.panelWidth * scale;
-            
-            // Calculate pattern vertical offset for half drop patterns
-            let patternVerticalOffset = 0;
-            if (patternMatch === 'half drop' && stripIndex % 2 === 1) {
-                patternVerticalOffset = repeatH / 2;
-            }
-            
-            for (let x = -repeatW; x < stripWidth + repeatW; x += repeatW) {
-                for (let y = -repeatH; y < scaledTotalHeight + repeatH; y += repeatH) {
-                    const drawX = stripX + x;
-                    const drawY = offsetY + y + patternVerticalOffset;
-                    ctx.drawImage(patternImage, drawX, drawY, repeatW, repeatH);
-                }
-            }
-        }
-        
-        ctx.restore();
         ctx.globalAlpha = 1.0;
     }
     
@@ -221,7 +224,7 @@ function drawSection2_CompleteView(ctx, offsetX, offsetY, scaledTotalWidth, scal
     drawSection2Outlines(ctx, offsetX, offsetY, scaledTotalWidth, scaledTotalHeight, scaledWallWidth, scaledWallHeight, wallOffsetX, wallOffsetY, scale);
 }
 
-// Section 3: Wall only view
+// FIXED: Section 3 - Wall only view with proper half-drop alignment
 function drawSection3_WallOnly(ctx, wallOffsetX, wallOffsetY, scaledWallWidth, scaledWallHeight, scale) {
     const { pattern, wallWidth, wallHeight, calculations } = currentPreview;
     
@@ -236,7 +239,7 @@ function drawSection3_WallOnly(ctx, wallOffsetX, wallOffsetY, scaledWallWidth, s
         ctx.rect(Math.floor(wallOffsetX), Math.floor(wallOffsetY), Math.ceil(scaledWallWidth), Math.ceil(scaledWallHeight));
         ctx.clip();
         
-        // Calculate transformation to align with Section 2
+        // FIXED: Calculate transformation to align with Section 2
         const leftMargin = 60;
         const maxWidth = 1400 - leftMargin - 30;
         const scaledTotalWidth = calculations.totalWidth * scale;
@@ -254,16 +257,22 @@ function drawSection3_WallOnly(ctx, wallOffsetX, wallOffsetY, scaledWallWidth, s
             const section2StripX = section2OffsetX + (stripIndex * pattern.panelWidth * scale);
             const stripX = section2StripX + xTransform;
             
-            // Calculate pattern vertical offset for half drop patterns
-            let patternVerticalOffset = 0;
+            // FIXED: Calculate strip-level vertical offset for half drop patterns
+            let stripVerticalOffset = 0;
             if (patternMatch === 'half drop' && stripIndex % 2 === 1) {
-                patternVerticalOffset = repeatH / 2;
+                stripVerticalOffset = repeatH / 2;
             }
             
-            for (let x = -repeatW; x < pattern.panelWidth * scale + repeatW; x += repeatW) {
+            // Calculate how many horizontal repeats fit in the strip
+            const horizontalRepeats = Math.ceil((pattern.panelWidth * scale) / repeatW) + 1;
+            
+            for (let xIndex = 0; xIndex < horizontalRepeats; xIndex++) {
+                const patternX = stripX + (xIndex * repeatW) - repeatW;
+                
+                // Draw vertical column of repeats with strip offset
                 for (let y = -repeatH; y < scaledWallHeight + repeatH; y += repeatH) {
-                    const drawX = Math.floor(stripX + x);
-                    const drawY = Math.floor(wallOffsetY + y + patternVerticalOffset);
+                    const drawX = Math.floor(patternX);
+                    const drawY = Math.floor(wallOffsetY + y + stripVerticalOffset); // Apply strip offset
                     ctx.drawImage(patternImage, drawX, drawY, Math.ceil(repeatW), Math.ceil(repeatH));
                 }
             }
