@@ -1,5 +1,5 @@
 // Wallpaper Calculator Pattern Data
-// Rhinne Collection - With Pattern Matching Support
+// Rhinne Collection - Complete with Pattern Matching Support
 
 const patterns = {
   "w-meg-dus-2": {
@@ -321,39 +321,6 @@ const patterns = {
     "repeatHeight": 10.25,
     "hasRepeatHeight": true,
     "minOverage": 4,
-    "imageUrl": "../patterns/W-BER-BLA-1-2-repeat.jpg",
-    "saleType": "yard",
-    "panelWidth": 27,
-    "minYardOrder": 5,
-    "patternMatch": "straight"
-  },
-  "w-ber-bla-1-2-1": {
-    "name": "Rosette: Artichoke",
-    "sku": "W-BER-BLA-1-2-1",
-    "repeatWidth": 6.75,
-    "repeatHeight": 10.25,
-    "hasRepeatHeight": true,
-    "minOverage": 4,
-    "imageUrl": "../patterns/W-BER-BLA-1-2-1-repeat.jpg",
-    "saleType": "yard",
-    "panelWidth": 27,
-    "minYardOrder": 5,
-    "patternMatch": "straight"
-  },
-  "w-ber-bla-1-1": {
-    "name": "Parc Floral: Sweet Pea",
-    "sku": "W-BER-BLA-1-1",
-    "repeatWidth": 13.5,
-    "repeatHeight": 17.25,
-    "hasRepeatHeight": true,
-    "minOverage": 4,
-    "imageUrl": "../patterns/W-BER-BLA-1-1-repeat.jpg",
-    "saleType": "yard",
-    "panelWidth": 27,
-    "minYardOrder": 5,
-    "patternMatch": "half drop"
-  }
-};,
     "imageUrl": "../patterns/W-BER-BLA-1-2-repeat.jpg",
     "saleType": "yard",
     "panelWidth": 27,
