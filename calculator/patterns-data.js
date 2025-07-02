@@ -1,5 +1,5 @@
 // Wallpaper Calculator Pattern Data
-// Rhinne Collection - Complete with Pattern Matching Support
+// Rhinne Collection - Clean syntax version
 
 const patterns = {
   "w-meg-dus-2": {
