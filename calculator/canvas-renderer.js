@@ -105,10 +105,9 @@ function drawSection1_StripLayout(ctx, offsetX, offsetY, scaledTotalWidth, scale
             const stripWidth = pattern.panelWidth * scale;
             
             // Calculate pattern vertical offset for half drop patterns
-            // This offsets the PATTERN PLACEMENT within each strip, not the strip itself
             let patternVerticalOffset = 0;
             if (patternMatch === 'half drop' && stripIndex % 2 === 1) {
-                patternVerticalOffset = repeatH / 2; // Offset pattern down by half repeat height
+                patternVerticalOffset = repeatH / 2;
             }
             
             console.log(`🎨 Strip ${stripIndex}: stripX=${stripX}, stripWidth=${stripWidth}, patternOffset=${patternVerticalOffset}, patternMatch=${patternMatch}`);
@@ -118,12 +117,21 @@ function drawSection1_StripLayout(ctx, offsetX, offsetY, scaledTotalWidth, scale
             ctx.rect(stripX, offsetY, stripWidth, scaledTotalHeight);
             ctx.clip();
             
-            // Draw pattern tiles within this strip with proper half-drop offset
+            // Draw pattern tiles within this strip
+            // Start from a consistent Y position and apply offset
+            const startY = offsetY;
+            const endY = offsetY + scaledTotalHeight;
+            
             for (let x = -repeatW; x < stripWidth + repeatW; x += repeatW) {
-                for (let y = -repeatH; y < scaledTotalHeight + repeatH; y += repeatH) {
+                // Start pattern drawing from the top of the strip area, with offset applied
+                for (let y = startY - repeatH + patternVerticalOffset; y < endY + repeatH; y += repeatH) {
                     const drawX = stripX + x;
-                    const drawY = offsetY + y + patternVerticalOffset;
-                    ctx.drawImage(patternImage, drawX, drawY, repeatW, repeatH);
+                    const drawY = y;
+                    
+                    // Only draw if the pattern will be visible in the strip area
+                    if (drawY + repeatH > offsetY && drawY < offsetY + scaledTotalHeight) {
+                        ctx.drawImage(patternImage, drawX, drawY, repeatW, repeatH);
+                    }
                 }
             }
             
