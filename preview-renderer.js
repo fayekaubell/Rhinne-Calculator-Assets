@@ -12,44 +12,46 @@ let imageLoaded = false;
  */
 function preloadPatternImage(pattern) {
     return new Promise((resolve) => {
-        if (!pattern.repeat_url) {
-            console.log('No repeat URL provided for pattern');
+        // Check for image URL in different possible property names
+        const imageUrl = pattern.repeat_url || pattern.imageUrl || pattern.image_url;
+        
+        if (!imageUrl) {
+            console.log('No repeat URL provided for pattern:', pattern.pattern_name);
             resolve(null);
             return;
         }
 
-        console.log('Loading pattern image:', pattern.repeat_url);
+        console.log('Loading pattern image:', imageUrl, 'for pattern:', pattern.pattern_name);
         const img = new Image();
-        img.crossOrigin = 'anonymous';
         
         img.onload = function() {
-            console.log('Pattern image loaded successfully');
+            console.log('✅ Pattern image loaded successfully for:', pattern.pattern_name);
             patternImage = img;
             imageLoaded = true;
             resolve(img);
         };
         
         img.onerror = function() {
-            console.log('Image load failed, trying without CORS...');
+            console.log('❌ Image load failed, trying without CORS for:', pattern.pattern_name);
             
             // Try without CORS
             const fallbackImg = new Image();
             fallbackImg.onload = function() {
-                console.log('Pattern image loaded without CORS');
+                console.log('✅ Pattern image loaded without CORS for:', pattern.pattern_name);
                 patternImage = fallbackImg;
                 imageLoaded = true;
                 resolve(fallbackImg);
             };
             
             fallbackImg.onerror = function() {
-                console.error('Failed to load pattern image:', pattern.repeat_url);
+                console.error('❌ Failed to load pattern image completely:', imageUrl, 'for pattern:', pattern.pattern_name);
                 resolve(null);
             };
             
-            fallbackImg.src = pattern.repeat_url;
+            fallbackImg.src = imageUrl;
         };
         
-        img.src = pattern.repeat_url;
+        img.src = imageUrl;
     });
 }
 
@@ -149,9 +151,17 @@ function drawSection1_PanelLayout(ctx, layoutData, previewData) {
     const { offsetX, section1Y, scaledTotalWidth, scaledTotalHeight, scale } = layoutData;
     
     console.log('🎨 Drawing Section 1: Panel Layout');
+    console.log('Image loaded state:', imageLoaded, 'Pattern image exists:', !!patternImage);
+    console.log('Pattern details:', {
+        name: pattern.pattern_name,
+        imageUrl: pattern.repeat_url,
+        repeatWidth: pattern.repeat_width_inches,
+        repeatHeight: pattern.repeat_height_inches
+    });
     
     // Draw pattern if image is loaded
     if (imageLoaded && patternImage) {
+        console.log('✅ Drawing with actual pattern image');
         // Handle different pattern types
         const repeatW = calculations.saleType === 'yard' ? pattern.repeat_width_inches * scale :
             (pattern.sequenceLength === 1 ? (pattern.panel_width_inches || 54) * scale : pattern.repeat_width_inches * scale);
@@ -181,13 +191,21 @@ function drawSection1_PanelLayout(ctx, layoutData, previewData) {
                     for (let y = -repeatH; y < scaledTotalHeight + repeatH; y += repeatH) {
                         const drawX = panelX + x - (sourceOffsetX * scale);
                         const drawY = section1Y + y;
-                        ctx.drawImage(patternImage, drawX, drawY, repeatW, repeatH);
+                        try {
+                            ctx.drawImage(patternImage, drawX, drawY, repeatW, repeatH);
+                        } catch (error) {
+                            console.warn('Error drawing pattern tile:', error);
+                        }
                     }
                 } else {
                     // Non-repeating pattern - anchor to bottom
                     const drawX = panelX + x - (sourceOffsetX * scale);
                     const drawY = section1Y + scaledTotalHeight - repeatH;
-                    ctx.drawImage(patternImage, drawX, drawY, repeatW, repeatH);
+                    try {
+                        ctx.drawImage(patternImage, drawX, drawY, repeatW, repeatH);
+                    } catch (error) {
+                        console.warn('Error drawing non-repeating pattern tile:', error);
+                    }
                 }
             }
             
@@ -195,6 +213,7 @@ function drawSection1_PanelLayout(ctx, layoutData, previewData) {
         }
     } else {
         // Draw fallback pattern
+        console.log('⚠️ Drawing fallback pattern - image not loaded');
         drawFallbackPattern(ctx, offsetX, section1Y, scaledTotalWidth, scaledTotalHeight, scale, previewData);
     }
     
