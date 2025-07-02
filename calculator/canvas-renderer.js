@@ -104,25 +104,25 @@ function drawSection1_StripLayout(ctx, offsetX, offsetY, scaledTotalWidth, scale
             const stripX = offsetX + (stripIndex * pattern.panelWidth * scale);
             const stripWidth = pattern.panelWidth * scale;
             
-            // Calculate vertical offset for half drop patterns
-            let verticalOffset = 0;
+            // Calculate pattern vertical offset for half drop patterns
+            // This offsets the PATTERN PLACEMENT within each strip, not the strip itself
+            let patternVerticalOffset = 0;
             if (patternMatch === 'half drop' && stripIndex % 2 === 1) {
-                // Offset every other strip by half the repeat height
-                verticalOffset = -(repeatH / 2);
+                patternVerticalOffset = repeatH / 2; // Offset pattern down by half repeat height
             }
             
-            console.log(`🎨 Strip ${stripIndex}: stripX=${stripX}, stripWidth=${stripWidth}, verticalOffset=${verticalOffset}, patternMatch=${patternMatch}`);
+            console.log(`🎨 Strip ${stripIndex}: stripX=${stripX}, stripWidth=${stripWidth}, patternOffset=${patternVerticalOffset}, patternMatch=${patternMatch}`);
             
             ctx.save();
             ctx.beginPath();
             ctx.rect(stripX, offsetY, stripWidth, scaledTotalHeight);
             ctx.clip();
             
-            // Draw pattern tiles within this strip
+            // Draw pattern tiles within this strip with proper half-drop offset
             for (let x = -repeatW; x < stripWidth + repeatW; x += repeatW) {
-                for (let y = -repeatH + verticalOffset; y < scaledTotalHeight + repeatH + Math.abs(verticalOffset); y += repeatH) {
+                for (let y = -repeatH; y < scaledTotalHeight + repeatH; y += repeatH) {
                     const drawX = stripX + x;
-                    const drawY = offsetY + y;
+                    const drawY = offsetY + y + patternVerticalOffset;
                     ctx.drawImage(patternImage, drawX, drawY, repeatW, repeatH);
                 }
             }
@@ -157,21 +157,21 @@ function drawSection2_CompleteView(ctx, offsetX, offsetY, scaledTotalWidth, scal
             const stripX = offsetX + (stripIndex * pattern.panelWidth * scale);
             const stripWidth = pattern.panelWidth * scale;
             
-            // Calculate vertical offset for half drop patterns
-            let verticalOffset = 0;
-            if (patternMatch === 'half drop' && stripIndex % 2 === 1) {
-                verticalOffset = -(repeatH / 2);
-            }
-            
             ctx.save();
             ctx.beginPath();
             ctx.rect(stripX, offsetY, stripWidth, scaledTotalHeight);
             ctx.clip();
             
+            // Calculate pattern vertical offset for half drop patterns
+            let patternVerticalOffset = 0;
+            if (patternMatch === 'half drop' && stripIndex % 2 === 1) {
+                patternVerticalOffset = repeatH / 2;
+            }
+            
             for (let x = -repeatW; x < stripWidth + repeatW; x += repeatW) {
-                for (let y = -repeatH + verticalOffset; y < scaledTotalHeight + repeatH + Math.abs(verticalOffset); y += repeatH) {
+                for (let y = -repeatH; y < scaledTotalHeight + repeatH; y += repeatH) {
                     const drawX = stripX + x;
-                    const drawY = offsetY + y;
+                    const drawY = offsetY + y + patternVerticalOffset;
                     ctx.drawImage(patternImage, drawX, drawY, repeatW, repeatH);
                 }
             }
@@ -190,16 +190,16 @@ function drawSection2_CompleteView(ctx, offsetX, offsetY, scaledTotalWidth, scal
             const stripX = offsetX + (stripIndex * pattern.panelWidth * scale);
             const stripWidth = pattern.panelWidth * scale;
             
-            // Calculate vertical offset for half drop patterns
-            let verticalOffset = 0;
+            // Calculate pattern vertical offset for half drop patterns
+            let patternVerticalOffset = 0;
             if (patternMatch === 'half drop' && stripIndex % 2 === 1) {
-                verticalOffset = -(repeatH / 2);
+                patternVerticalOffset = repeatH / 2;
             }
             
             for (let x = -repeatW; x < stripWidth + repeatW; x += repeatW) {
-                for (let y = -repeatH + verticalOffset; y < scaledTotalHeight + repeatH + Math.abs(verticalOffset); y += repeatH) {
+                for (let y = -repeatH; y < scaledTotalHeight + repeatH; y += repeatH) {
                     const drawX = stripX + x;
-                    const drawY = offsetY + y;
+                    const drawY = offsetY + y + patternVerticalOffset;
                     ctx.drawImage(patternImage, drawX, drawY, repeatW, repeatH);
                 }
             }
@@ -246,16 +246,16 @@ function drawSection3_WallOnly(ctx, wallOffsetX, wallOffsetY, scaledWallWidth, s
             const section2StripX = section2OffsetX + (stripIndex * pattern.panelWidth * scale);
             const stripX = section2StripX + xTransform;
             
-            // Calculate vertical offset for half drop patterns
-            let verticalOffset = 0;
+            // Calculate pattern vertical offset for half drop patterns
+            let patternVerticalOffset = 0;
             if (patternMatch === 'half drop' && stripIndex % 2 === 1) {
-                verticalOffset = -(repeatH / 2);
+                patternVerticalOffset = repeatH / 2;
             }
             
             for (let x = -repeatW; x < pattern.panelWidth * scale + repeatW; x += repeatW) {
-                for (let y = -repeatH + verticalOffset; y < scaledWallHeight + repeatH + Math.abs(verticalOffset); y += repeatH) {
+                for (let y = -repeatH; y < scaledWallHeight + repeatH; y += repeatH) {
                     const drawX = Math.floor(stripX + x);
-                    const drawY = Math.floor(wallOffsetY + y);
+                    const drawY = Math.floor(wallOffsetY + y + patternVerticalOffset);
                     ctx.drawImage(patternImage, drawX, drawY, Math.ceil(repeatW), Math.ceil(repeatH));
                 }
             }
