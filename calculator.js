@@ -105,38 +105,10 @@ function preloadPatternImage(pattern) {
     });
 }
 
-// Calculate wallpaper requirements - updated for diverse pattern sizes
+// Calculate wallpaper requirements using the new calculations module
 function calculateYardRequirements(pattern, wallWidth, wallHeight) {
-    const totalWidth = wallWidth + 4; // 4" overage
-    const totalHeight = wallHeight + 4; // 4" overage
-    
-    // Calculate number of strips needed based on material width
-    const stripsNeeded = Math.ceil(totalWidth / pattern.material_width_inches);
-    
-    // Calculate strip length needed based on repeat height and pattern match
-    let repeatsNeeded;
-    if (pattern.pattern_match === 'half drop') {
-        // For half drop, we need extra length for pattern matching
-        repeatsNeeded = Math.ceil(totalHeight / pattern.repeat_height_inches) + 1;
-    } else {
-        // For straight match
-        repeatsNeeded = Math.ceil(totalHeight / pattern.repeat_height_inches);
-    }
-    
-    const stripLengthInches = repeatsNeeded * pattern.repeat_height_inches;
-    
-    // Calculate total yardage: (strip length × strips needed) / 36, rounded up, minimum from pattern
-    const totalYardageRaw = (stripLengthInches * stripsNeeded) / 36;
-    const totalYardage = Math.max(Math.ceil(totalYardageRaw), pattern.min_yard_order);
-    
-    return {
-        stripsNeeded: stripsNeeded,
-        stripLengthInches: stripLengthInches,
-        stripLengthYards: Math.ceil(stripLengthInches / 36),
-        totalYardage: totalYardage,
-        totalWidth: stripsNeeded * pattern.material_width_inches,
-        totalHeight: stripLengthInches
-    };
+    // Use the centralized calculation function
+    return window.WallpaperCalculations.calculateWallpaperRequirements(pattern, wallWidth, wallHeight);
 }
 
 // Main function to generate preview
@@ -255,9 +227,21 @@ function updatePreviewInfo() {
     const { calculations, formattedWidth, formattedHeight } = currentPreview;
     
     document.getElementById('wallDimensions').textContent = `${formattedWidth} × ${formattedHeight}`;
-    document.getElementById('numStrips').textContent = calculations.stripsNeeded;
-    document.getElementById('stripLength').textContent = `${calculations.stripLengthYards} yards each`;
-    document.getElementById('totalYards').textContent = `${calculations.totalYardage} yards`;
+    
+    if (calculations.saleType === 'yard') {
+        // For yard patterns: show strips and total yardage
+        document.getElementById('numStrips').textContent = calculations.stripsNeeded;
+        document.getElementById('stripLength').textContent = `${calculations.stripLengthYards} yards each`;
+        document.getElementById('totalYards').textContent = `${calculations.totalYardage} yards`;
+    } else {
+        // For panel patterns: show panels and converted yardage
+        const yardagePerPanel = Math.round(calculations.panelLength / 3);
+        const totalYardage = calculations.panelsNeeded * yardagePerPanel;
+        
+        document.getElementById('numStrips').textContent = calculations.panelsNeeded + ' panels';
+        document.getElementById('stripLength').textContent = `${calculations.panelLength}' each`;
+        document.getElementById('totalYards').textContent = `${totalYardage} yards estimated`;
+    }
 }
 
 function drawPreview() {
@@ -332,7 +316,7 @@ function drawPreview() {
 }
 
 function drawPatternTiles(ctx, offsetX, offsetY, displayWidth, displayHeight, scale) {
-    const { pattern } = currentPreview;
+    const { pattern, calculations } = currentPreview;
     const repeatWidth = pattern.repeat_width_inches * scale;
     const repeatHeight = pattern.repeat_height_inches * scale;
     
@@ -418,18 +402,21 @@ function drawLabels(ctx, offsetX, offsetY, scaledTotalWidth, scaledTotalHeight, 
     ctx.font = '14px Arial';
     ctx.textAlign = 'center';
     
-    // Strip labels
-    for (let i = 0; i < calculations.stripsNeeded; i++) {
-        const stripCenterX = offsetX + (i * pattern.material_width_inches * scale) + (pattern.material_width_inches * scale / 2);
+    // Strip/Panel labels
+    const numElements = calculations.saleType === 'yard' ? calculations.stripsNeeded : calculations.panelsNeeded;
+    const elementWidth = calculations.saleType === 'yard' ? pattern.material_width_inches : (pattern.panel_width_inches || 54);
+    
+    for (let i = 0; i < numElements; i++) {
+        const elementCenterX = offsetX + (i * elementWidth * scale) + (elementWidth * scale / 2);
         const labelY = offsetY - 20;
         
         ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-        const stripText = `Strip ${i + 1}`;
-        const metrics = ctx.measureText(stripText);
-        ctx.fillRect(stripCenterX - metrics.width/2 - 4, labelY - 12, metrics.width + 8, 16);
+        const elementText = calculations.saleType === 'yard' ? `Strip ${i + 1}` : `Panel ${i + 1}`;
+        const metrics = ctx.measureText(elementText);
+        ctx.fillRect(elementCenterX - metrics.width/2 - 4, labelY - 12, metrics.width + 8, 16);
         
         ctx.fillStyle = '#333';
-        ctx.fillText(stripText, stripCenterX, labelY);
+        ctx.fillText(elementText, elementCenterX, labelY);
     }
     
     // Wall label
