@@ -1,5 +1,5 @@
 // Wallpaper Calculator Pattern Data
-// Rhinne Collection - Cleaned for GitHub Pages deployment
+// Rhinne Collection - With Pattern Matching Support
 
 const patterns = {
   "w-meg-dus-2": {
@@ -12,7 +12,8 @@ const patterns = {
     "imageUrl": "../patterns/W-MEG-DUS-2-repeat.jpg",
     "saleType": "yard",
     "panelWidth": 27,
-    "minYardOrder": 5
+    "minYardOrder": 5,
+    "patternMatch": "half drop"
   },
   "w-meg-dus": {
     "name": "Megaflora: Tomato",
@@ -24,7 +25,8 @@ const patterns = {
     "imageUrl": "../patterns/W-MEG-DUS-repeat.jpg",
     "saleType": "yard",
     "panelWidth": 27,
-    "minYardOrder": 5
+    "minYardOrder": 5,
+    "patternMatch": "half drop"
   },
   "w-meg-blu": {
     "name": "Megaflora: Blue",
@@ -36,7 +38,8 @@ const patterns = {
     "imageUrl": "../patterns/W-MEG-BLU-repeat.jpg",
     "saleType": "yard",
     "panelWidth": 27,
-    "minYardOrder": 5
+    "minYardOrder": 5,
+    "patternMatch": "half drop"
   },
   "w-meg-dus-1": {
     "name": "Megaflora: Butterscotch",
@@ -48,7 +51,8 @@ const patterns = {
     "imageUrl": "../patterns/W-MEG-DUS-1-repeat.jpg",
     "saleType": "yard",
     "panelWidth": 27,
-    "minYardOrder": 5
+    "minYardOrder": 5,
+    "patternMatch": "half drop"
   },
   "w-bot-avo": {
     "name": "Botanico: Avocado",
@@ -60,7 +64,8 @@ const patterns = {
     "imageUrl": "../patterns/W-BOT-AVO-repeat.jpg",
     "saleType": "yard",
     "panelWidth": 27,
-    "minYardOrder": 5
+    "minYardOrder": 5,
+    "patternMatch": "straight"
   },
   "w-bot-avo-1": {
     "name": "Botanico: Prato Peach",
@@ -72,7 +77,8 @@ const patterns = {
     "imageUrl": "../patterns/W-BOT-AVO-1-repeat.jpg",
     "saleType": "yard",
     "panelWidth": 27,
-    "minYardOrder": 5
+    "minYardOrder": 5,
+    "patternMatch": "straight"
   },
   "w-bot-cor": {
     "name": "Botanico: Cornflower",
@@ -84,7 +90,8 @@ const patterns = {
     "imageUrl": "../patterns/W-BOT-COR-repeat.jpg",
     "saleType": "yard",
     "panelWidth": 27,
-    "minYardOrder": 5
+    "minYardOrder": 5,
+    "patternMatch": "straight"
   },
   "w-ond-cor": {
     "name": "Ondulé: Cornflower",
@@ -96,7 +103,8 @@ const patterns = {
     "imageUrl": "../patterns/W-OND-COR-repeat.jpg",
     "saleType": "yard",
     "panelWidth": 27,
-    "minYardOrder": 5
+    "minYardOrder": 5,
+    "patternMatch": "straight"
   },
   "w-ond-lav-1": {
     "name": "Ondulé: Himalayan Salt",
@@ -108,7 +116,8 @@ const patterns = {
     "imageUrl": "../patterns/W-OND-LAV-1-repeat.jpg",
     "saleType": "yard",
     "panelWidth": 27,
-    "minYardOrder": 5
+    "minYardOrder": 5,
+    "patternMatch": "straight"
   },
   "w-ond-lav-1-1": {
     "name": "Ondulé: Prato Peach",
@@ -120,7 +129,8 @@ const patterns = {
     "imageUrl": "../patterns/W-OND-LAV-1-1-repeat.jpg",
     "saleType": "yard",
     "panelWidth": 27,
-    "minYardOrder": 5
+    "minYardOrder": 5,
+    "patternMatch": "straight"
   },
   "w-ond-lav": {
     "name": "Ondulé: Lavender Mocha",
@@ -132,7 +142,8 @@ const patterns = {
     "imageUrl": "../patterns/W-OND-LAV-repeat.jpg",
     "saleType": "yard",
     "panelWidth": 27,
-    "minYardOrder": 5
+    "minYardOrder": 5,
+    "patternMatch": "straight"
   },
   "w-eti-cof": {
     "name": "Etincelle: Coffee",
@@ -144,7 +155,8 @@ const patterns = {
     "imageUrl": "../patterns/W-ETI-COF-repeat.jpg",
     "saleType": "yard",
     "panelWidth": 54,
-    "minYardOrder": 5
+    "minYardOrder": 5,
+    "patternMatch": "straight"
   },
   "w-san-mor": {
     "name": "The Sands: Morning Mist",
@@ -156,7 +168,8 @@ const patterns = {
     "imageUrl": "../patterns/W-SAN-MOR-repeat.jpg",
     "saleType": "yard",
     "panelWidth": 27,
-    "minYardOrder": 5
+    "minYardOrder": 5,
+    "patternMatch": "straight"
   },
   "w-hou-clo": {
     "name": "Houndstooth: Clover",
@@ -168,7 +181,8 @@ const patterns = {
     "imageUrl": "../patterns/W-HOU-CLO-repeat.jpg",
     "saleType": "yard",
     "panelWidth": 27,
-    "minYardOrder": 5
+    "minYardOrder": 5,
+    "patternMatch": "straight"
   },
   "w-hou-bla": {
     "name": "Houndstooth: Blazer Blue",
@@ -180,7 +194,8 @@ const patterns = {
     "imageUrl": "../patterns/W-HOU-BLA-repeat.jpg",
     "saleType": "yard",
     "panelWidth": 27,
-    "minYardOrder": 5
+    "minYardOrder": 5,
+    "patternMatch": "straight"
   },
   "w-ber-bla": {
     "name": "Bernini's Bees: Blazer Blue",
@@ -192,7 +207,8 @@ const patterns = {
     "imageUrl": "../patterns/W-BER-BLA-repeat.jpg",
     "saleType": "yard",
     "panelWidth": 27,
-    "minYardOrder": 5
+    "minYardOrder": 5,
+    "patternMatch": "half drop"
   },
   "w-ber-bla-1": {
     "name": "Bernini's Bees: Oat",
@@ -204,7 +220,8 @@ const patterns = {
     "imageUrl": "../patterns/W-BER-BLA-1-repeat.jpg",
     "saleType": "yard",
     "panelWidth": 27,
-    "minYardOrder": 5
+    "minYardOrder": 5,
+    "patternMatch": "half drop"
   },
   "w-lad-cla-1": {
     "name": "Lady Edith's Roses: Tuscan Gold",
@@ -216,7 +233,8 @@ const patterns = {
     "imageUrl": "../patterns/W-LAD-CLA-1-repeat.jpg",
     "saleType": "yard",
     "panelWidth": 27,
-    "minYardOrder": 5
+    "minYardOrder": 5,
+    "patternMatch": "half drop"
   },
   "w-lad-cla": {
     "name": "Lady Edith's Roses: Clay Coral",
@@ -228,7 +246,8 @@ const patterns = {
     "imageUrl": "../patterns/W-LAD-CLA-repeat.jpg",
     "saleType": "yard",
     "panelWidth": 27,
-    "minYardOrder": 5
+    "minYardOrder": 5,
+    "patternMatch": "half drop"
   },
   "w-san-mor-1-1-1": {
     "name": "Alpine Tulip: Sweet Pea",
@@ -240,7 +259,8 @@ const patterns = {
     "imageUrl": "../patterns/W-SAN-MOR-1-1-1-repeat.jpg",
     "saleType": "yard",
     "panelWidth": 27,
-    "minYardOrder": 5
+    "minYardOrder": 5,
+    "patternMatch": "straight"
   },
   "w-san-mor-1-1": {
     "name": "Alpine Tulip: Red Sky",
@@ -252,7 +272,8 @@ const patterns = {
     "imageUrl": "../patterns/W-SAN-MOR-1-1-repeat.jpg",
     "saleType": "yard",
     "panelWidth": 27,
-    "minYardOrder": 5
+    "minYardOrder": 5,
+    "patternMatch": "straight"
   },
   "w-san-mor-1": {
     "name": "Howard's Plaid: Cinnamon",
@@ -264,7 +285,8 @@ const patterns = {
     "imageUrl": "../patterns/W-SAN-MOR-1-repeat.jpg",
     "saleType": "yard",
     "panelWidth": 27,
-    "minYardOrder": 5
+    "minYardOrder": 5,
+    "patternMatch": "straight"
   },
   "w-san-mor-1-2": {
     "name": "Howard's Plaid: Artichoke",
@@ -276,7 +298,8 @@ const patterns = {
     "imageUrl": "../patterns/W-SAN-MOR-1-2-repeat.jpg",
     "saleType": "yard",
     "panelWidth": 27,
-    "minYardOrder": 5
+    "minYardOrder": 5,
+    "patternMatch": "straight"
   },
   "w-san-mor-1-3": {
     "name": "Howard's Plaid: Carolina Blue",
@@ -288,7 +311,8 @@ const patterns = {
     "imageUrl": "../patterns/W-SAN-MOR-1-3-repeat.jpg",
     "saleType": "yard",
     "panelWidth": 27,
-    "minYardOrder": 5
+    "minYardOrder": 5,
+    "patternMatch": "straight"
   },
   "w-ber-bla-1-2": {
     "name": "Rosette: Carolina Blue",
@@ -300,7 +324,8 @@ const patterns = {
     "imageUrl": "../patterns/W-BER-BLA-1-2-repeat.jpg",
     "saleType": "yard",
     "panelWidth": 27,
-    "minYardOrder": 5
+    "minYardOrder": 5,
+    "patternMatch": "straight"
   },
   "w-ber-bla-1-2-1": {
     "name": "Rosette: Artichoke",
@@ -312,7 +337,8 @@ const patterns = {
     "imageUrl": "../patterns/W-BER-BLA-1-2-1-repeat.jpg",
     "saleType": "yard",
     "panelWidth": 27,
-    "minYardOrder": 5
+    "minYardOrder": 5,
+    "patternMatch": "straight"
   },
   "w-ber-bla-1-1": {
     "name": "Parc Floral: Sweet Pea",
@@ -324,7 +350,41 @@ const patterns = {
     "imageUrl": "../patterns/W-BER-BLA-1-1-repeat.jpg",
     "saleType": "yard",
     "panelWidth": 27,
-    "minYardOrder": 5
+    "minYardOrder": 5,
+    "patternMatch": "half drop"
+  }
+};,
+    "imageUrl": "../patterns/W-BER-BLA-1-2-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5,
+    "patternMatch": "straight"
+  },
+  "w-ber-bla-1-2-1": {
+    "name": "Rosette: Artichoke",
+    "sku": "W-BER-BLA-1-2-1",
+    "repeatWidth": 6.75,
+    "repeatHeight": 10.25,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-BER-BLA-1-2-1-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5,
+    "patternMatch": "straight"
+  },
+  "w-ber-bla-1-1": {
+    "name": "Parc Floral: Sweet Pea",
+    "sku": "W-BER-BLA-1-1",
+    "repeatWidth": 13.5,
+    "repeatHeight": 17.25,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-BER-BLA-1-1-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5,
+    "patternMatch": "half drop"
   }
 };
 
