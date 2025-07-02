@@ -1,0 +1,336 @@
+// Wallpaper Calculator Pattern Data
+// Rhinne Collection - Cleaned for GitHub Pages deployment
+
+const patterns = {
+  "w-meg-dus-2": {
+    "name": "Megaflora: Dusk",
+    "sku": "W-MEG-DUS-2",
+    "repeatWidth": 27,
+    "repeatHeight": 33.5,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-MEG-DUS-2-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5
+  },
+  "w-meg-dus": {
+    "name": "Megaflora: Tomato",
+    "sku": "W-MEG-DUS",
+    "repeatWidth": 27,
+    "repeatHeight": 33.5,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-MEG-DUS-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5
+  },
+  "w-meg-blu": {
+    "name": "Megaflora: Blue",
+    "sku": "W-MEG-BLU",
+    "repeatWidth": 27,
+    "repeatHeight": 33.5,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-MEG-BLU-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5
+  },
+  "w-meg-dus-1": {
+    "name": "Megaflora: Butterscotch",
+    "sku": "W-MEG-DUS-1",
+    "repeatWidth": 27,
+    "repeatHeight": 33.5,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-MEG-DUS-1-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5
+  },
+  "w-bot-avo": {
+    "name": "Botanico: Avocado",
+    "sku": "W-BOT-AVO",
+    "repeatWidth": 9,
+    "repeatHeight": 9,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-BOT-AVO-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5
+  },
+  "w-bot-avo-1": {
+    "name": "Botanico: Prato Peach",
+    "sku": "W-BOT-AVO-1",
+    "repeatWidth": 9,
+    "repeatHeight": 9,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-BOT-AVO-1-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5
+  },
+  "w-bot-cor": {
+    "name": "Botanico: Cornflower",
+    "sku": "W-BOT-COR",
+    "repeatWidth": 9,
+    "repeatHeight": 9,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-BOT-COR-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5
+  },
+  "w-ond-cor": {
+    "name": "Ondulé: Cornflower",
+    "sku": "W-OND-COR",
+    "repeatWidth": 27,
+    "repeatHeight": 28,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-OND-COR-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5
+  },
+  "w-ond-lav-1": {
+    "name": "Ondulé: Himalayan Salt",
+    "sku": "W-OND-LAV-1",
+    "repeatWidth": 27,
+    "repeatHeight": 28,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-OND-LAV-1-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5
+  },
+  "w-ond-lav-1-1": {
+    "name": "Ondulé: Prato Peach",
+    "sku": "W-OND-LAV-1-1",
+    "repeatWidth": 27,
+    "repeatHeight": 28,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-OND-LAV-1-1-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5
+  },
+  "w-ond-lav": {
+    "name": "Ondulé: Lavender Mocha",
+    "sku": "W-OND-LAV",
+    "repeatWidth": 27,
+    "repeatHeight": 28,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-OND-LAV-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5
+  },
+  "w-eti-cof": {
+    "name": "Etincelle: Coffee",
+    "sku": "W-ETI-COF",
+    "repeatWidth": 18,
+    "repeatHeight": 21.3,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-ETI-COF-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 54,
+    "minYardOrder": 5
+  },
+  "w-san-mor": {
+    "name": "The Sands: Morning Mist",
+    "sku": "W-SAN-MOR",
+    "repeatWidth": 6.75,
+    "repeatHeight": 7,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-SAN-MOR-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5
+  },
+  "w-hou-clo": {
+    "name": "Houndstooth: Clover",
+    "sku": "W-HOU-CLO",
+    "repeatWidth": 13.5,
+    "repeatHeight": 11,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-HOU-CLO-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5
+  },
+  "w-hou-bla": {
+    "name": "Houndstooth: Blazer Blue",
+    "sku": "W-HOU-BLA",
+    "repeatWidth": 13.5,
+    "repeatHeight": 11,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-HOU-BLA-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5
+  },
+  "w-ber-bla": {
+    "name": "Bernini's Bees: Blazer Blue",
+    "sku": "W-BER-BLA",
+    "repeatWidth": 13.5,
+    "repeatHeight": 18,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-BER-BLA-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5
+  },
+  "w-ber-bla-1": {
+    "name": "Bernini's Bees: Oat",
+    "sku": "W-BER-BLA-1",
+    "repeatWidth": 13.5,
+    "repeatHeight": 18,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-BER-BLA-1-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5
+  },
+  "w-lad-cla-1": {
+    "name": "Lady Edith's Roses: Tuscan Gold",
+    "sku": "W-LAD-CLA-1",
+    "repeatWidth": 13.5,
+    "repeatHeight": 27,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-LAD-CLA-1-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5
+  },
+  "w-lad-cla": {
+    "name": "Lady Edith's Roses: Clay Coral",
+    "sku": "W-LAD-CLA",
+    "repeatWidth": 13.5,
+    "repeatHeight": 27,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-LAD-CLA-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5
+  },
+  "w-san-mor-1-1-1": {
+    "name": "Alpine Tulip: Sweet Pea",
+    "sku": "W-SAN-MOR-1-1-1",
+    "repeatWidth": 9,
+    "repeatHeight": 9,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-SAN-MOR-1-1-1-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5
+  },
+  "w-san-mor-1-1": {
+    "name": "Alpine Tulip: Red Sky",
+    "sku": "W-SAN-MOR-1-1",
+    "repeatWidth": 9,
+    "repeatHeight": 9,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-SAN-MOR-1-1-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5
+  },
+  "w-san-mor-1": {
+    "name": "Howard's Plaid: Cinnamon",
+    "sku": "W-SAN-MOR-1",
+    "repeatWidth": 13.5,
+    "repeatHeight": 13.5,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-SAN-MOR-1-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5
+  },
+  "w-san-mor-1-2": {
+    "name": "Howard's Plaid: Artichoke",
+    "sku": "W-SAN-MOR-1-2",
+    "repeatWidth": 13.5,
+    "repeatHeight": 13.5,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-SAN-MOR-1-2-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5
+  },
+  "w-san-mor-1-3": {
+    "name": "Howard's Plaid: Carolina Blue",
+    "sku": "W-SAN-MOR-1-3",
+    "repeatWidth": 13.5,
+    "repeatHeight": 13.5,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-SAN-MOR-1-3-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5
+  },
+  "w-ber-bla-1-2": {
+    "name": "Rosette: Carolina Blue",
+    "sku": "W-BER-BLA-1-2",
+    "repeatWidth": 6.75,
+    "repeatHeight": 10.25,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-BER-BLA-1-2-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5
+  },
+  "w-ber-bla-1-2-1": {
+    "name": "Rosette: Artichoke",
+    "sku": "W-BER-BLA-1-2-1",
+    "repeatWidth": 6.75,
+    "repeatHeight": 10.25,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-BER-BLA-1-2-1-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5
+  },
+  "w-ber-bla-1-1": {
+    "name": "Parc Floral: Sweet Pea",
+    "sku": "W-BER-BLA-1-1",
+    "repeatWidth": 13.5,
+    "repeatHeight": 17.25,
+    "hasRepeatHeight": true,
+    "minOverage": 4,
+    "imageUrl": "../patterns/W-BER-BLA-1-1-repeat.jpg",
+    "saleType": "yard",
+    "panelWidth": 27,
+    "minYardOrder": 5
+  }
+};
+
+// Export for module systems or make globally available
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = patterns;
+} else if (typeof window !== 'undefined') {
+  window.patterns = patterns;
+}
