@@ -92,47 +92,59 @@ function drawSection1_StripLayout(ctx, offsetX, offsetY, scaledTotalWidth, scale
         const repeatH = pattern.repeatHeight * scale;
         const patternMatch = pattern.patternMatch || 'straight';
         
-        console.log('🖼️ Drawing pattern with:', {
+        // FIXED: Determine half-drop behavior based on repeat-to-panel ratio
+        const repeatsPerPanel = pattern.panelWidth / pattern.repeatWidth;
+        const isEvenDivision = repeatsPerPanel === Math.floor(repeatsPerPanel);
+        const useInternalOffset = patternMatch === 'half drop' && isEvenDivision && repeatsPerPanel > 1;
+        const usePanelOffset = patternMatch === 'half drop' && (!isEvenDivision || repeatsPerPanel === 1);
+        
+        console.log('🖼️ Half-drop logic:', {
             repeatW: repeatW,
             repeatH: repeatH,
             patternMatch: patternMatch,
-            imageWidth: patternImage.width,
-            imageHeight: patternImage.height,
-            hasRepeatHeight: pattern.hasRepeatHeight
+            repeatsPerPanel: repeatsPerPanel,
+            isEvenDivision: isEvenDivision,
+            useInternalOffset: useInternalOffset,
+            usePanelOffset: usePanelOffset
         });
         
         for (let stripIndex = 0; stripIndex < calculations.panelsNeeded; stripIndex++) {
             const stripX = offsetX + (stripIndex * pattern.panelWidth * scale);
             const stripWidth = pattern.panelWidth * scale;
             
-            // FIXED: Calculate strip-level vertical offset for half drop patterns
+            // Calculate strip-level vertical offset for panel-to-panel half drop
             let stripVerticalOffset = 0;
-            if (patternMatch === 'half drop' && stripIndex % 2 === 1) {
+            if (usePanelOffset && stripIndex % 2 === 1) {
                 stripVerticalOffset = repeatH / 2;
             }
             
-            console.log(`🎨 Strip ${stripIndex}: stripX=${stripX}, stripWidth=${stripWidth}, stripOffset=${stripVerticalOffset}, patternMatch=${patternMatch}`);
+            console.log(`🎨 Strip ${stripIndex}: stripX=${stripX}, stripOffset=${stripVerticalOffset}, useInternal=${useInternalOffset}, usePanel=${usePanelOffset}`);
             
             ctx.save();
             ctx.beginPath();
             ctx.rect(stripX, offsetY, stripWidth, scaledTotalHeight);
             ctx.clip();
             
-            // FIXED: Draw pattern tiles within this strip
             // Calculate how many horizontal repeats fit in the strip
             const horizontalRepeats = Math.ceil(stripWidth / repeatW) + 1; // Extra repeat for safety
             
-            // Start from top with enough padding and apply strip offset to ALL pattern tiles
+            // Start from top with enough padding
             const startY = offsetY - repeatH;
             const endY = offsetY + scaledTotalHeight + repeatH;
             
             for (let xIndex = 0; xIndex < horizontalRepeats; xIndex++) {
                 const patternX = stripX + (xIndex * repeatW) - repeatW; // Start one repeat to the left for safety
                 
-                // Draw vertical column of repeats with strip offset applied to ALL
+                // FIXED: Calculate internal repeat offset for within-panel half drop
+                let internalRepeatOffset = 0;
+                if (useInternalOffset && xIndex % 2 === 1) {
+                    internalRepeatOffset = repeatH / 2;
+                }
+                
+                // Draw vertical column of repeats
                 for (let y = startY; y < endY; y += repeatH) {
                     const drawX = patternX;
-                    const drawY = y + stripVerticalOffset; // Apply strip offset to every repeat in the strip
+                    const drawY = y + stripVerticalOffset + internalRepeatOffset; // Apply both offsets
                     
                     // Only draw if the pattern will be visible in the strip area
                     if (drawY + repeatH > offsetY && drawY < offsetY + scaledTotalHeight) {
@@ -165,7 +177,7 @@ function drawSection2_CompleteView(ctx, offsetX, offsetY, scaledTotalWidth, scal
         const repeatH = pattern.repeatHeight * scale;
         const patternMatch = pattern.patternMatch || 'straight';
         
-        // FIXED: Helper function to draw pattern with half-drop support
+        // FIXED: Helper function to draw pattern with proper half-drop support
         const drawPatternInArea = (alpha, clipArea = null) => {
             ctx.globalAlpha = alpha;
             
@@ -176,13 +188,19 @@ function drawSection2_CompleteView(ctx, offsetX, offsetY, scaledTotalWidth, scal
                 ctx.clip();
             }
             
+            // Determine half-drop behavior
+            const repeatsPerPanel = pattern.panelWidth / pattern.repeatWidth;
+            const isEvenDivision = repeatsPerPanel === Math.floor(repeatsPerPanel);
+            const useInternalOffset = patternMatch === 'half drop' && isEvenDivision && repeatsPerPanel > 1;
+            const usePanelOffset = patternMatch === 'half drop' && (!isEvenDivision || repeatsPerPanel === 1);
+            
             for (let stripIndex = 0; stripIndex < calculations.panelsNeeded; stripIndex++) {
                 const stripX = offsetX + (stripIndex * pattern.panelWidth * scale);
                 const stripWidth = pattern.panelWidth * scale;
                 
-                // Calculate strip-level vertical offset for half drop patterns
+                // Calculate strip-level vertical offset for panel-to-panel half drop
                 let stripVerticalOffset = 0;
-                if (patternMatch === 'half drop' && stripIndex % 2 === 1) {
+                if (usePanelOffset && stripIndex % 2 === 1) {
                     stripVerticalOffset = repeatH / 2;
                 }
                 
@@ -192,10 +210,16 @@ function drawSection2_CompleteView(ctx, offsetX, offsetY, scaledTotalWidth, scal
                 for (let xIndex = 0; xIndex < horizontalRepeats; xIndex++) {
                     const patternX = stripX + (xIndex * repeatW) - repeatW;
                     
-                    // Draw vertical column of repeats with strip offset
+                    // Calculate internal repeat offset for within-panel half drop
+                    let internalRepeatOffset = 0;
+                    if (useInternalOffset && xIndex % 2 === 1) {
+                        internalRepeatOffset = repeatH / 2;
+                    }
+                    
+                    // Draw vertical column of repeats with both offsets
                     for (let y = -repeatH; y < scaledTotalHeight + repeatH; y += repeatH) {
                         const drawX = patternX;
-                        const drawY = offsetY + y + stripVerticalOffset; // Apply strip offset
+                        const drawY = offsetY + y + stripVerticalOffset + internalRepeatOffset;
                         ctx.drawImage(patternImage, drawX, drawY, repeatW, repeatH);
                     }
                 }
@@ -253,13 +277,19 @@ function drawSection3_WallOnly(ctx, wallOffsetX, wallOffsetY, scaledWallWidth, s
         const repeatH = pattern.repeatHeight * scale;
         const patternMatch = pattern.patternMatch || 'straight';
         
+        // Determine half-drop behavior
+        const repeatsPerPanel = pattern.panelWidth / pattern.repeatWidth;
+        const isEvenDivision = repeatsPerPanel === Math.floor(repeatsPerPanel);
+        const useInternalOffset = patternMatch === 'half drop' && isEvenDivision && repeatsPerPanel > 1;
+        const usePanelOffset = patternMatch === 'half drop' && (!isEvenDivision || repeatsPerPanel === 1);
+        
         for (let stripIndex = 0; stripIndex < calculations.panelsNeeded; stripIndex++) {
             const section2StripX = section2OffsetX + (stripIndex * pattern.panelWidth * scale);
             const stripX = section2StripX + xTransform;
             
-            // FIXED: Calculate strip-level vertical offset for half drop patterns
+            // FIXED: Calculate strip-level vertical offset for panel-to-panel half drop
             let stripVerticalOffset = 0;
-            if (patternMatch === 'half drop' && stripIndex % 2 === 1) {
+            if (usePanelOffset && stripIndex % 2 === 1) {
                 stripVerticalOffset = repeatH / 2;
             }
             
@@ -269,10 +299,16 @@ function drawSection3_WallOnly(ctx, wallOffsetX, wallOffsetY, scaledWallWidth, s
             for (let xIndex = 0; xIndex < horizontalRepeats; xIndex++) {
                 const patternX = stripX + (xIndex * repeatW) - repeatW;
                 
-                // Draw vertical column of repeats with strip offset
+                // Calculate internal repeat offset for within-panel half drop
+                let internalRepeatOffset = 0;
+                if (useInternalOffset && xIndex % 2 === 1) {
+                    internalRepeatOffset = repeatH / 2;
+                }
+                
+                // Draw vertical column of repeats with both offsets
                 for (let y = -repeatH; y < scaledWallHeight + repeatH; y += repeatH) {
                     const drawX = Math.floor(patternX);
-                    const drawY = Math.floor(wallOffsetY + y + stripVerticalOffset); // Apply strip offset
+                    const drawY = Math.floor(wallOffsetY + y + stripVerticalOffset + internalRepeatOffset);
                     ctx.drawImage(patternImage, drawX, drawY, Math.ceil(repeatW), Math.ceil(repeatH));
                 }
             }
