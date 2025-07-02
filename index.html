@@ -781,7 +781,7 @@
         }
 
         function drawPreview() {
-            console.log('Drawing three-section preview...');
+            console.log('Drawing two-section preview...');
             const canvas = document.getElementById('previewCanvas');
             const ctx = canvas.getContext('2d');
             const { pattern, wallWidth, wallHeight, calculations } = currentPreview;
@@ -790,75 +790,40 @@
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Calculate dimensions for three sections with proper spacing
+            // Calculate dimensions for two sections with proper spacing
             const margin = 60;
-            const sectionSpacing = 40; // Space between sections
+            const sectionSpacing = 60; // Space between sections
             const availableWidth = canvas.width - (margin * 2);
-            const availableHeight = canvas.height - (margin * 2) - (sectionSpacing * 2); // Remove spacing from available height
+            const availableHeight = canvas.height - (margin * 2) - sectionSpacing; // Remove spacing from available height
             
-            // Section heights (flexible ratios)
-            const section1Height = availableHeight * 0.25; // Top strips
-            const section2Height = availableHeight * 0.45; // Overlaid on wall
-            const section3Height = availableHeight * 0.25; // Wall only
-            const arrowHeight = 30; // Fixed arrow height
+            // Section heights (equal split)
+            const section1Height = availableHeight * 0.5; // Strips overlaid on wall
+            const section2Height = availableHeight * 0.5; // Wall only
             
             // Calculate scale to ensure everything fits within bounds
             const maxDisplayWidth = Math.max(calculations.totalWidth, wallWidth + 8); // 8" padding around wall
             const maxDisplayHeight = calculations.stripLengthInches;
             
-            // Scale to fit both width and the largest section height
+            // Scale to fit both width and the section height
             const widthScale = availableWidth / maxDisplayWidth;
-            const heightScale = section2Height / maxDisplayHeight; // Use section2 as it's the largest
+            const heightScale = section1Height / maxDisplayHeight;
             const scale = Math.min(widthScale, heightScale) * 0.9; // 90% to ensure some padding
             
             console.log(`Scale factor: ${scale.toFixed(3)}`);
             
             // Calculate section Y positions with proper spacing
             const section1Y = margin;
-            const arrow1Y = section1Y + section1Height + sectionSpacing;
-            const section2Y = arrow1Y + arrowHeight + sectionSpacing;
-            const arrow2Y = section2Y + section2Height + sectionSpacing;
-            const section3Y = arrow2Y + arrowHeight + sectionSpacing;
+            const section2Y = section1Y + section1Height + sectionSpacing;
             
-            // Draw sections with proper spacing
-            drawSection1_Strips(ctx, margin, section1Y, availableWidth, section1Height, scale);
-            drawArrows(ctx, margin, arrow1Y, availableWidth, arrowHeight);
-            drawSection2_StripsOnWall(ctx, margin, section2Y, availableWidth, section2Height, scale);
-            drawArrows(ctx, margin, arrow2Y, availableWidth, arrowHeight);
-            drawSection3_WallOnly(ctx, margin, section3Y, availableWidth, section3Height, scale);
+            // Draw sections
+            drawSection1_StripsOnWall(ctx, margin, section1Y, availableWidth, section1Height, scale);
+            drawSection2_WallOnly(ctx, margin, section2Y, availableWidth, section2Height, scale);
             
-            console.log('Three-section preview completed');
+            console.log('Two-section preview completed');
         }
 
-        // Section 1: Individual strips laid out horizontally
-        function drawSection1_Strips(ctx, x, y, width, height, scale) {
-            const { pattern, calculations } = currentPreview;
-            
-            const stripWidth = pattern.material_width_inches * scale;
-            const stripHeight = calculations.stripLengthInches * scale;
-            
-            // Center strips horizontally in available width
-            const totalStripsWidth = calculations.stripsNeeded * stripWidth;
-            const startX = x + (width - totalStripsWidth) / 2;
-            const centerY = y + height / 2;
-            const stripY = centerY - stripHeight / 2;
-            
-            // Draw each strip
-            for (let i = 0; i < calculations.stripsNeeded; i++) {
-                const stripX = startX + (i * stripWidth);
-                
-                // Draw strip outline
-                ctx.strokeStyle = '#333333';
-                ctx.lineWidth = 0.6;
-                ctx.strokeRect(stripX, stripY, stripWidth, stripHeight);
-                
-                // Draw pattern on strip
-                drawPatternOnStrip(ctx, stripX, stripY, stripWidth, stripHeight, i, scale, 1.0);
-            }
-        }
-        
-        // Section 2: Strips overlaid on wall outline
-        function drawSection2_StripsOnWall(ctx, x, y, width, height, scale) {
+        // Section 1: Strips overlaid on wall outline
+        function drawSection1_StripsOnWall(ctx, x, y, width, height, scale) {
             const { pattern, wallWidth, wallHeight, calculations } = currentPreview;
             
             const stripWidth = pattern.material_width_inches * scale;
@@ -895,12 +860,12 @@
             
             // Draw wall outline on top
             ctx.strokeStyle = '#2c3e50';
-            ctx.lineWidth = 0.6;
+            ctx.lineWidth = 0.8;
             ctx.strokeRect(wallStartX, wallStartY, scaledWallWidth, scaledWallHeight);
         }
         
-        // Section 3: Wall dimensions only
-        function drawSection3_WallOnly(ctx, x, y, width, height, scale) {
+        // Section 2: Wall dimensions only
+        function drawSection2_WallOnly(ctx, x, y, width, height, scale) {
             const { wallWidth, wallHeight } = currentPreview;
             
             const scaledWallWidth = wallWidth * scale;
@@ -912,38 +877,8 @@
             
             // Draw wall outline
             ctx.strokeStyle = '#2c3e50';
-            ctx.lineWidth = 0.6;
+            ctx.lineWidth = 0.8;
             ctx.strokeRect(wallX, wallY, scaledWallWidth, scaledWallHeight);
-        }
-        
-        // Draw arrows between sections
-        function drawArrows(ctx, x, y, width, height) {
-            const arrowCount = 3;
-            const arrowSpacing = width / (arrowCount + 1);
-            const arrowSize = 8;
-            const centerY = y + height / 2;
-            
-            ctx.strokeStyle = '#666666';
-            ctx.lineWidth = 0.6;
-            ctx.fillStyle = '#666666';
-            
-            for (let i = 1; i <= arrowCount; i++) {
-                const arrowX = x + (i * arrowSpacing);
-                
-                // Draw arrow line
-                ctx.beginPath();
-                ctx.moveTo(arrowX, centerY - arrowSize);
-                ctx.lineTo(arrowX, centerY + arrowSize);
-                ctx.stroke();
-                
-                // Draw arrow head
-                ctx.beginPath();
-                ctx.moveTo(arrowX, centerY + arrowSize);
-                ctx.lineTo(arrowX - arrowSize/2, centerY + arrowSize - arrowSize/2);
-                ctx.lineTo(arrowX + arrowSize/2, centerY + arrowSize - arrowSize/2);
-                ctx.closePath();
-                ctx.fill();
-            }
         }
 
         // Draw pattern on a single strip using clipping for seamless appearance
