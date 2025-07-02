@@ -181,7 +181,8 @@ function drawSection2_CompleteView(ctx, offsetX, offsetY, scaledTotalWidth, scal
         const drawPatternInArea = (alpha, clipArea = null) => {
             ctx.globalAlpha = alpha;
             
-            if (clipArea) {
+            // Only clip if clipArea is provided AND alpha is 1.0 (for wall area)
+            if (clipArea && alpha === 1.0) {
                 ctx.save();
                 ctx.beginPath();
                 ctx.rect(clipArea.x, clipArea.y, clipArea.width, clipArea.height);
@@ -225,7 +226,7 @@ function drawSection2_CompleteView(ctx, offsetX, offsetY, scaledTotalWidth, scal
                 }
             }
             
-            if (clipArea) {
+            if (clipArea && alpha === 1.0) {
                 ctx.restore();
             }
         };
