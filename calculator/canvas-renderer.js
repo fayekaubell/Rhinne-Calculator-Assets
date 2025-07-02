@@ -561,5 +561,6 @@ function openCanvasModal() {
     document.body.appendChild(modal);
 }
 
-// Make modal function globally available
+// Make functions globally available
+window.drawPreview = drawPreview;
 window.openCanvasModal = openCanvasModal;
