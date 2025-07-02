@@ -479,7 +479,7 @@
             </div>
 
             <div class="canvas-container">
-                <canvas id="previewCanvas" width="1400" height="1000"></canvas>
+                <canvas id="previewCanvas" width="1800" height="1400"></canvas>
                 <div class="loading-overlay" id="loadingOverlay" style="display: none;">
                     Loading pattern...
                 </div>
@@ -790,29 +790,42 @@
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Calculate dimensions for three sections
-            const margin = 40;
+            // Calculate dimensions for three sections with proper spacing
+            const margin = 60;
+            const sectionSpacing = 40; // Space between sections
             const availableWidth = canvas.width - (margin * 2);
-            const availableHeight = canvas.height - (margin * 2);
+            const availableHeight = canvas.height - (margin * 2) - (sectionSpacing * 2); // Remove spacing from available height
             
             // Section heights (flexible ratios)
             const section1Height = availableHeight * 0.25; // Top strips
             const section2Height = availableHeight * 0.45; // Overlaid on wall
             const section3Height = availableHeight * 0.25; // Wall only
-            const arrowHeight = availableHeight * 0.05;   // Space for arrows
+            const arrowHeight = 30; // Fixed arrow height
             
-            // Calculate scale based on the largest section (section 2)
+            // Calculate scale to ensure everything fits within bounds
             const maxDisplayWidth = Math.max(calculations.totalWidth, wallWidth + 8); // 8" padding around wall
-            const scale = Math.min(availableWidth / maxDisplayWidth, section2Height / calculations.stripLengthInches);
+            const maxDisplayHeight = calculations.stripLengthInches;
+            
+            // Scale to fit both width and the largest section height
+            const widthScale = availableWidth / maxDisplayWidth;
+            const heightScale = section2Height / maxDisplayHeight; // Use section2 as it's the largest
+            const scale = Math.min(widthScale, heightScale) * 0.9; // 90% to ensure some padding
             
             console.log(`Scale factor: ${scale.toFixed(3)}`);
             
-            // Draw sections
-            drawSection1_Strips(ctx, margin, margin, availableWidth, section1Height, scale);
-            drawArrows(ctx, margin, margin + section1Height, availableWidth, arrowHeight);
-            drawSection2_StripsOnWall(ctx, margin, margin + section1Height + arrowHeight, availableWidth, section2Height, scale);
-            drawArrows(ctx, margin, margin + section1Height + arrowHeight + section2Height, availableWidth, arrowHeight);
-            drawSection3_WallOnly(ctx, margin, margin + section1Height + arrowHeight + section2Height + arrowHeight, availableWidth, section3Height, scale);
+            // Calculate section Y positions with proper spacing
+            const section1Y = margin;
+            const arrow1Y = section1Y + section1Height + sectionSpacing;
+            const section2Y = arrow1Y + arrowHeight + sectionSpacing;
+            const arrow2Y = section2Y + section2Height + sectionSpacing;
+            const section3Y = arrow2Y + arrowHeight + sectionSpacing;
+            
+            // Draw sections with proper spacing
+            drawSection1_Strips(ctx, margin, section1Y, availableWidth, section1Height, scale);
+            drawArrows(ctx, margin, arrow1Y, availableWidth, arrowHeight);
+            drawSection2_StripsOnWall(ctx, margin, section2Y, availableWidth, section2Height, scale);
+            drawArrows(ctx, margin, arrow2Y, availableWidth, arrowHeight);
+            drawSection3_WallOnly(ctx, margin, section3Y, availableWidth, section3Height, scale);
             
             console.log('Three-section preview completed');
         }
@@ -933,13 +946,18 @@
             }
         }
 
-        // Draw pattern on a single strip
+        // Draw pattern on a single strip using clipping for seamless appearance
         function drawPatternOnStrip(ctx, stripX, stripY, stripWidth, stripHeight, stripIndex, scale, opacity) {
             const { pattern } = currentPreview;
             
-            // Save context for opacity
+            // Save context for clipping and opacity
             ctx.save();
             ctx.globalAlpha = opacity;
+            
+            // Clip to strip boundaries for seamless pattern
+            ctx.beginPath();
+            ctx.rect(stripX, stripY, stripWidth, stripHeight);
+            ctx.clip();
             
             const repeatWidth = pattern.repeat_width_inches * scale;
             const repeatHeight = pattern.repeat_height_inches * scale;
@@ -953,27 +971,23 @@
                 verticalOffset = repeatHeight / 2;
             }
             
-            // Draw pattern tiles to fill the strip
-            const tilesY = Math.ceil((stripHeight + repeatHeight) / repeatHeight) + 1; // Extra for offset
+            // Draw pattern tiles to fill the strip - start from top-left and tile
+            const tilesX = horizontalRepeats + 1; // Extra to ensure coverage
+            const tilesY = Math.ceil((stripHeight + repeatHeight + Math.abs(verticalOffset)) / repeatHeight) + 1;
             
-            for (let h = 0; h < horizontalRepeats; h++) {
+            for (let h = 0; h < tilesX; h++) {
                 for (let v = 0; v < tilesY; v++) {
                     const tileX = stripX + (h * repeatWidth);
                     const tileY = stripY + (v * repeatHeight) - verticalOffset;
                     
-                    // Only draw if within strip bounds
-                    if (tileX < stripX + stripWidth && tileY < stripY + stripHeight && 
-                        tileX + repeatWidth > stripX && tileY + repeatHeight > stripY) {
-                        
-                        if (imageLoaded && patternImage) {
-                            try {
-                                ctx.drawImage(patternImage, tileX, tileY, repeatWidth, repeatHeight);
-                            } catch (error) {
-                                drawFallbackTile(ctx, tileX, tileY, repeatWidth, repeatHeight, h, v);
-                            }
-                        } else {
+                    if (imageLoaded && patternImage) {
+                        try {
+                            ctx.drawImage(patternImage, tileX, tileY, repeatWidth, repeatHeight);
+                        } catch (error) {
                             drawFallbackTile(ctx, tileX, tileY, repeatWidth, repeatHeight, h, v);
                         }
+                    } else {
+                        drawFallbackTile(ctx, tileX, tileY, repeatWidth, repeatHeight, h, v);
                     }
                 }
             }
@@ -981,8 +995,49 @@
             ctx.restore();
         }
         
-        // Draw pattern on strip with wall mask for section 2
+        // Draw pattern on strip with wall mask for section 2 using clipping
         function drawPatternOnStripWithWallMask(ctx, stripX, stripY, stripWidth, stripHeight, stripIndex, scale, wallX, wallY, wallWidth, wallHeight) {
+            const { pattern } = currentPreview;
+            
+            // First draw the part inside the wall at full opacity
+            ctx.save();
+            ctx.globalAlpha = 1.0;
+            
+            // Clip to intersection of strip and wall
+            ctx.beginPath();
+            const intersectX = Math.max(stripX, wallX);
+            const intersectY = Math.max(stripY, wallY);
+            const intersectW = Math.min(stripX + stripWidth, wallX + wallWidth) - intersectX;
+            const intersectH = Math.min(stripY + stripHeight, wallY + wallHeight) - intersectY;
+            
+            if (intersectW > 0 && intersectH > 0) {
+                ctx.rect(intersectX, intersectY, intersectW, intersectH);
+                ctx.clip();
+                drawPatternTiles(ctx, stripX, stripY, stripWidth, stripHeight, stripIndex, scale);
+            }
+            ctx.restore();
+            
+            // Then draw the part outside the wall at 50% opacity
+            ctx.save();
+            ctx.globalAlpha = 0.5;
+            
+            // Clip to strip minus wall area
+            ctx.beginPath();
+            ctx.rect(stripX, stripY, stripWidth, stripHeight);
+            if (intersectW > 0 && intersectH > 0) {
+                // Subtract the wall intersection area
+                ctx.rect(intersectX, intersectY, intersectW, intersectH);
+                ctx.clip('evenodd'); // Use even-odd rule to subtract
+            } else {
+                ctx.clip();
+            }
+            
+            drawPatternTiles(ctx, stripX, stripY, stripWidth, stripHeight, stripIndex, scale);
+            ctx.restore();
+        }
+        
+        // Helper function to draw pattern tiles without clipping
+        function drawPatternTiles(ctx, stripX, stripY, stripWidth, stripHeight, stripIndex, scale) {
             const { pattern } = currentPreview;
             
             const repeatWidth = pattern.repeat_width_inches * scale;
@@ -998,36 +1053,22 @@
             }
             
             // Draw pattern tiles to fill the strip
-            const tilesY = Math.ceil((stripHeight + repeatHeight) / repeatHeight) + 1;
+            const tilesX = horizontalRepeats + 1;
+            const tilesY = Math.ceil((stripHeight + repeatHeight + Math.abs(verticalOffset)) / repeatHeight) + 1;
             
-            for (let h = 0; h < horizontalRepeats; h++) {
+            for (let h = 0; h < tilesX; h++) {
                 for (let v = 0; v < tilesY; v++) {
                     const tileX = stripX + (h * repeatWidth);
                     const tileY = stripY + (v * repeatHeight) - verticalOffset;
                     
-                    // Only draw if within strip bounds
-                    if (tileX < stripX + stripWidth && tileY < stripY + stripHeight && 
-                        tileX + repeatWidth > stripX && tileY + repeatHeight > stripY) {
-                        
-                        // Determine opacity based on wall overlap
-                        const isInWall = (tileX < wallX + wallWidth && tileX + repeatWidth > wallX && 
-                                         tileY < wallY + wallHeight && tileY + repeatHeight > wallY);
-                        const opacity = isInWall ? 1.0 : 0.5;
-                        
-                        ctx.save();
-                        ctx.globalAlpha = opacity;
-                        
-                        if (imageLoaded && patternImage) {
-                            try {
-                                ctx.drawImage(patternImage, tileX, tileY, repeatWidth, repeatHeight);
-                            } catch (error) {
-                                drawFallbackTile(ctx, tileX, tileY, repeatWidth, repeatHeight, h, v);
-                            }
-                        } else {
+                    if (imageLoaded && patternImage) {
+                        try {
+                            ctx.drawImage(patternImage, tileX, tileY, repeatWidth, repeatHeight);
+                        } catch (error) {
                             drawFallbackTile(ctx, tileX, tileY, repeatWidth, repeatHeight, h, v);
                         }
-                        
-                        ctx.restore();
+                    } else {
+                        drawFallbackTile(ctx, tileX, tileY, repeatWidth, repeatHeight, h, v);
                     }
                 }
             }
@@ -1041,9 +1082,7 @@
             ctx.fillStyle = colors[colorIndex];
             ctx.fillRect(x, y, width, height);
             
-            ctx.strokeStyle = '#adb5bd';
-            ctx.lineWidth = 0.6;
-            ctx.strokeRect(x, y, width, height);
+            // No stroke for seamless appearance
             
             // Add pattern info text if tile is large enough
             if (width > 40 && height > 20) {
