@@ -1,0 +1,496 @@
+/* Wallpaper Calculator Styles */
+/* Designed to inherit from parent website when embedded */
+
+.calculator-container {
+    max-width: min(95vw, 1800px);
+    margin: 0 auto;
+    padding: 20px;
+    font-family: inherit; /* Inherit from parent site */
+    line-height: 1.6;
+}
+
+.page-title {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.page-title h1 {
+    color: inherit; /* Inherit from parent site */
+    margin-bottom: 15px;
+    font-size: inherit;
+}
+
+.page-title p {
+    margin: 0;
+    opacity: 0.7;
+    font-size: 16px;
+}
+
+/* Measuring Guide */
+.measuring-guide {
+    background: #fff;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.measuring-guide details {
+    padding: 0;
+}
+
+.measuring-guide summary {
+    padding: 20px 40px;
+    cursor: pointer;
+    list-style: none;
+    border-radius: 12px;
+    transition: background-color 0.3s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.measuring-guide summary h3 {
+    margin: 0;
+    text-align: left;
+    color: inherit;
+}
+
+.measuring-guide summary:hover {
+    background-color: #f8f9fa;
+}
+
+.measuring-guide summary::-webkit-details-marker {
+    display: none;
+}
+
+.measuring-guide summary::after {
+    content: '+';
+    float: right;
+    font-size: 18px;
+    font-weight: bold;
+    transition: transform 0.3s ease;
+}
+
+.measuring-guide details[open] summary::after {
+    transform: rotate(45deg);
+}
+
+.guide-content {
+    padding: 20px 40px 40px 40px;
+    border-top: 1px solid #e9ecef;
+}
+
+.guide-content p {
+    margin-bottom: 12px;
+    line-height: 1.5;
+    color: inherit;
+}
+
+.guide-content p:last-child {
+    margin-bottom: 0;
+    margin-top: 15px;
+    font-style: italic;
+    opacity: 0.8;
+}
+
+/* Calculator Section */
+.calculator-section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 40px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-group label,
+.form-group h3 {
+    display: block;
+    margin-bottom: 15px;
+    color: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    font-family: inherit;
+}
+
+.form-group select,
+.form-group input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    transition: border-color 0.3s ease;
+    background: white;
+    font-size: 16px;
+    font-family: inherit;
+}
+
+.form-group select:focus,
+.form-group input:focus {
+    outline: none;
+    border-color: #6c757d;
+}
+
+.dimension-input {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.dimension-input input {
+    flex: 1;
+    min-width: 80px;
+}
+
+.dimension-input span {
+    font-weight: 600;
+    opacity: 0.7;
+    white-space: nowrap;
+}
+
+/* Buttons */
+.btn {
+    border: none;
+    padding: 15px 30px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    width: 100%;
+    margin-top: 20px;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: inherit;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+    width: auto;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+/* Preview Section */
+.preview-section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 40px;
+    margin-bottom: 30px;
+    display: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.title-container {
+    text-align: center;
+    margin-bottom: 30px;
+    width: 100%;
+    display: block;
+    clear: both;
+}
+
+.title-container h2 {
+    margin: 0;
+    padding: 0;
+    display: block;
+    width: 100%;
+    color: inherit;
+    font-family: inherit;
+}
+
+.content-container {
+    width: 100%;
+    display: block;
+    clear: both;
+}
+
+.canvas-container {
+    text-align: center;
+    margin: 30px 0;
+    padding: 0;
+    width: 100%;
+    display: block;
+    clear: both;
+    position: relative;
+}
+
+#previewCanvas {
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    background: white;
+    max-width: 100%;
+    height: auto;
+    cursor: zoom-in;
+    display: block;
+    margin: 0 auto;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#previewCanvas:hover {
+    border-color: #007bff;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-weight: 600;
+    color: #666;
+    text-align: center;
+    width: 100%;
+    height: 100%;
+}
+
+/* Preview Info */
+.preview-info {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.preview-info h3 {
+    margin-bottom: 15px;
+    text-align: center;
+    color: inherit;
+    font-family: inherit;
+}
+
+.order-section {
+    margin-bottom: 20px;
+}
+
+.order-line {
+    margin-bottom: 8px;
+    line-height: 1.4;
+    text-align: center;
+    font-family: inherit;
+}
+
+.divider {
+    border: none;
+    border-top: 1px solid #e9ecef;
+    margin: 15px 0;
+}
+
+.disclaimer {
+    margin: 15px 0;
+    text-align: center;
+}
+
+.disclaimer p {
+    margin: 0;
+    font-style: italic;
+    opacity: 0.8;
+    font-family: inherit;
+}
+
+/* Actions */
+.actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 30px;
+}
+
+.actions .btn {
+    width: auto;
+    margin: 0;
+}
+
+/* Loading and Error Messages */
+.loading-message {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-style: italic;
+    font-family: inherit;
+}
+
+.error-message {
+    text-align: center;
+    padding: 20px;
+    color: #dc3545;
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-family: inherit;
+}
+
+/* Canvas Modal */
+.canvas-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 9999;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 20px 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.canvas-modal canvas {
+    cursor: zoom-out;
+    border: 2px solid #fff;
+    border-radius: 8px;
+    margin: auto;
+    display: block;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .calculator-container {
+        padding: 15px;
+        max-width: 95vw;
+    }
+    
+    .calculator-section,
+    .preview-section {
+        padding: 25px;
+    }
+    
+    .measuring-guide summary,
+    .guide-content {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+    
+    .canvas-container {
+        margin: 20px 0;
+        padding: 0 10px;
+    }
+    
+    #previewCanvas {
+        max-width: calc(100vw - 50px);
+        width: 100%;
+        height: auto;
+    }
+    
+    .dimension-input {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .dimension-input input {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+    
+    .actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+    
+    .actions .btn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    /* Mobile canvas modal adjustments */
+    .canvas-modal {
+        padding: 10px;
+    }
+    
+    .canvas-modal canvas {
+        max-width: 95vw;
+        max-height: 95vh;
+        object-fit: contain;
+    }
+}
+
+@media (min-width: 1200px) {
+    .calculator-container {
+        max-width: min(90vw, 2000px);
+    }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    .btn,
+    .measuring-guide summary,
+    .form-group select,
+    .form-group input,
+    #previewCanvas {
+        transition: none;
+    }
+    
+    .btn:hover {
+        transform: none;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .measuring-guide,
+    .calculator-section,
+    .preview-section {
+        border: 2px solid;
+    }
+    
+    .btn {
+        border: 2px solid;
+    }
+}
+
+/* Print styles */
+@media print {
+    .calculator-container {
+        max-width: none;
+        padding: 0;
+    }
+    
+    .measuring-guide summary::after {
+        display: none;
+    }
+    
+    .btn {
+        display: none;
+    }
+    
+    .canvas-modal {
+        display: none;
+    }
+}
