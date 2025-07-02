@@ -216,7 +216,7 @@ async function generatePreview() {
     }
 }
 
-// Calculate yard requirements (simplified for yard-based patterns)
+// Calculate yard requirements with pattern matching support
 function calculateYardRequirements(pattern, wallWidth, wallHeight) {
     const totalWidth = wallWidth + pattern.minOverage;
     const totalHeight = wallHeight + pattern.minOverage;
@@ -228,7 +228,8 @@ function calculateYardRequirements(pattern, wallWidth, wallHeight) {
         totalWidth,
         totalHeight,
         repeatHeight: pattern.repeatHeight,
-        panelWidth: pattern.panelWidth
+        panelWidth: pattern.panelWidth,
+        patternMatch: pattern.patternMatch || 'straight'
     });
     
     // Safety checks to prevent calculation errors
@@ -241,7 +242,8 @@ function calculateYardRequirements(pattern, wallWidth, wallHeight) {
             totalWidth: pattern.panelWidth || 27,
             totalHeight: 120,
             saleType: 'yard',
-            stripLengthInches: 120
+            stripLengthInches: 120,
+            patternMatch: pattern.patternMatch || 'straight'
         };
     }
     
@@ -254,13 +256,21 @@ function calculateYardRequirements(pattern, wallWidth, wallHeight) {
             totalWidth: 27,
             totalHeight: 120,
             saleType: 'yard',
-            stripLengthInches: 120
+            stripLengthInches: 120,
+            patternMatch: pattern.patternMatch || 'straight'
         };
     }
     
     // Calculate strip length: (wall height + 4") / vertical repeat = A, round up, then A * repeat height
     const repeatsNeeded = Math.ceil(totalHeight / pattern.repeatHeight);
-    const stripLengthInches = repeatsNeeded * pattern.repeatHeight;
+    let stripLengthInches = repeatsNeeded * pattern.repeatHeight;
+    
+    // For half drop patterns, add one full repeat height to ensure adequate coverage
+    const patternMatch = pattern.patternMatch || 'straight';
+    if (patternMatch === 'half drop') {
+        stripLengthInches += pattern.repeatHeight;
+        console.log('🔄 Half drop pattern: Added extra repeat height for coverage');
+    }
     
     // Calculate number of strips needed to cover wall width + 4"
     const stripsNeeded = Math.ceil(totalWidth / pattern.panelWidth);
@@ -276,6 +286,8 @@ function calculateYardRequirements(pattern, wallWidth, wallHeight) {
         stripsNeeded,
         totalYardageRaw,
         totalYardage,
+        patternMatch,
+        extraForHalfDrop: patternMatch === 'half drop' ? pattern.repeatHeight : 0,
         totalWidth: stripsNeeded * pattern.panelWidth,
         totalHeight: stripLengthInches
     });
@@ -288,7 +300,8 @@ function calculateYardRequirements(pattern, wallWidth, wallHeight) {
         totalWidth: stripsNeeded * pattern.panelWidth,
         totalHeight: stripLengthInches,
         saleType: 'yard',
-        stripLengthInches: stripLengthInches // Keep original inches value
+        stripLengthInches: stripLengthInches, // Keep original inches value
+        patternMatch: patternMatch
     };
 }
 
